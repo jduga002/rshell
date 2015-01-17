@@ -1,18 +1,18 @@
 #include <iostream>
 #include <string>
+#include <string.h>
 #include <vector>
 using namespace std;
 
 int main() {
-    string line;
+    char line[500]; 
     cout << "$ ";
-    getline(cin, line);
+    cin.getline(line, 500);
 
-    while (line != "exit") {
-        const char * cLine = line.c_str();
-        
+    while (strcmp(line, "exit") != 0) {
+        vector<char *> commands;
         cout << "$ ";
-        getline(cin, line);
+        cin.getline(line, 500);
     }
     return 0;
 }
