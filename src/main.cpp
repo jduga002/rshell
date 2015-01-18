@@ -5,8 +5,20 @@
 using namespace std;
 
 void exec_commands(char *commands) {
-    
+    vector<char *> v_words;
+    char *string_token;
+    string_token = strtok(commands, " ");
+    while (string_token != NULL) {
+        v_words.push_back(string_token);
+        string_token = strtok(NULL, " ");
     }
+    
+    for (unsigned i = 0; i < v_words.size(); i++) {
+        if (strcmp(v_words.at(i), "&&") == 0) { 
+
+        }
+    }
+}
 
 int main() {
     char line[500]; 
@@ -15,12 +27,14 @@ int main() {
 
     while (strcmp(line, "exit") != 0) {
         vector<char *> v_commands;
-        v_commands.push_back(strtok(line, ";"));
-        while (v_commands.at(v_commands.size()-1) != NULL) {
-            v_commands.push_back(strtok(NULL, ";"));
+        char *string_token = strtok(line, ";");
+
+        while (string_token != NULL) {
+            v_commands.push_back(string_token);
+            string_token = strtok(NULL, ";");
         }
 
-        for (int i = 0; i < v_commands.size(); i++) {
+        for (unsigned i = 0; i < v_commands.size(); i++) {
             //run the command between each semicolon
             exec_commands(v_commands.at(i));
         }

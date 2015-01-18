@@ -1,9 +1,9 @@
 # Makefile for rshell
 
-CXXFLAGS = -Wall -Werror -ansi -pedantic
+FLAGS = -Wall -Werror -ansi -pedantic
 
 all: | bin
-	g++ -o bin/rshell src/main.cpp
+	g++ $(FLAGS) -o bin/rshell src/main.cpp
 
 rshell: | bin
 	g++ -o bin/rshell src/main.cpp
