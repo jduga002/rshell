@@ -8,7 +8,7 @@
 #include <stdio.h>
 using namespace std;
 
-void exec_command(char **command, int num_words) { 
+bool exec_command(char **command, int num_words) { 
     if (strcmp(command[0],"exit") == 0 && num_words == 1)
         exit(0);
     
@@ -32,10 +32,45 @@ void exec_command(char **command, int num_words) {
             exit(1);
         }
     }
+    return true;
 }
 
 void exec_commands(char *commands) {
-    vector<char *> v_words;
+    vector<char *> v_commands;
+    char *ptr = commands;
+    unsigned size = strlen(commands);
+    unsigned i = 0;
+    unsigned j = 0;
+    cerr << "Entering while loop:" << endl;
+    while (i + j < size) {
+        i = strcspn(ptr, "&|");
+        cerr << "  i is " << i << endl;
+        if (i + j == size || i + j == size - 1) {
+            cerr << "    Reached end of line." << endl;
+            v_commands.push_back(ptr);
+            break;
+        }
+        else if (ptr[i+j] == ptr[i+j+1]) {
+            cerr << "    " << ptr[i+j] << ptr[i+j] << " found" << endl;
+            char string_copy[i+j+1];
+            cerr << "Char * string_copy, made; will copy ptr to it." << endl;
+            strncpy(string_copy, ptr, i+j);
+            cerr << "    Going to append null char." << endl;
+            string_copy[i + j + 1] = '\0';
+            v_commands.push_back(string_copy);
+            ptr += i + j + 2;
+            i = 0; j = 0;
+            size = strlen(ptr);
+        }
+        else {
+            ptr += i + j + 1;
+            j = i;
+            i = 0;
+        }
+    for (unsigned k = 0; k < v_commands.size(); k ++)
+        cout << v_commands.at(k) << endl;
+    }
+/*
     char *string_token;
     string_token = strtok(commands, " ");
     while (string_token != NULL) {
@@ -43,17 +78,26 @@ void exec_commands(char *commands) {
         string_token = strtok(NULL, " ");
     }
     
+    int size = 0;
+    char **command = NULL;
     for (unsigned i = 0; i < v_words.size(); i++) {
         if (strcmp(v_words.at(i), "&&") == 0) { 
-
+            bool success = exec_command(command, size);
+            if (!success) {
+                
+            }
         }
-    }
+    }*/
 }
 
 int main() {
     char line[500]; 
     cout << "$ ";
     cin.getline(line, 500);
+    if (line[0] == '#') {
+        line[0] = '\0';
+    }
+    strcpy(line,strtok(line, "#"));
 
     while (strcmp(line, "exit") != 0) {
         vector<char *> v_commands;
@@ -66,11 +110,16 @@ int main() {
 
         for (unsigned i = 0; i < v_commands.size(); i++) {
             //run the command between each semicolon
+            cerr << v_commands.at(i) << endl;
             exec_commands(v_commands.at(i));
         }
 
         cout << "$ " << flush;
         cin.getline(line, 500);
+        if (line[0] == '#') { 
+            line[0] = '\0';
+        }
+        strcpy(line, strtok(line, "#"));
     }
 
     return 0;
