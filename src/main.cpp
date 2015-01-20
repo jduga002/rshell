@@ -8,6 +8,25 @@
 #include <stdio.h>
 using namespace std;
 
+const int MAX_LINE_LENGTH = 500;
+
+char * getUsername() {
+    char *username;
+    username = getlogin();
+    if (!username) {
+        perror("getlogin() error");
+        strcpy(username, "user");
+    }
+    return username;
+}
+
+void getHost(char *hostName) {
+    if (-1 == gethostname(hostName, MAX_LINE_LENGTH - 1) ) { 
+        perror("gethostname() error");
+        strcpy(hostName, "hostName");
+    }
+}
+
 bool exec_command(char **command, int num_words) { 
     if (strcmp(command[0],"exit") == 0 && num_words == 1)
         exit(0);
@@ -52,7 +71,7 @@ void exec_commands(char *commands) {
         }
         else if (ptr[i+j] == ptr[i+j+1]) {
             cerr << "    " << ptr[i+j] << ptr[i+j] << " found" << endl;
-            char string_copy[i+j+1];
+            char *string_copy;
             cerr << "Char * string_copy, made; will copy ptr to it." << endl;
             strncpy(string_copy, ptr, i+j);
             cerr << "    Going to append null char." << endl;
@@ -91,9 +110,13 @@ void exec_commands(char *commands) {
 }
 
 int main() {
-    char line[500]; 
-    cout << "$ ";
-    cin.getline(line, 500);
+    char hostName[MAX_LINE_LENGTH];
+    getHost(hostName);
+    char *username = getUsername();
+
+    char line[MAX_LINE_LENGTH]; 
+    cout << username << "@" << hostName << "$ ";
+    cin.getline(line, MAX_LINE_LENGTH);
     if (line[0] == '#') {
         line[0] = '\0';
     }
@@ -114,8 +137,8 @@ int main() {
             exec_commands(v_commands.at(i));
         }
 
-        cout << "$ " << flush;
-        cin.getline(line, 500);
+        cout << username << "@" << hostName << "$ " << flush;
+        cin.getline(line, MAX_LINE_LENGTH);
         if (line[0] == '#') { 
             line[0] = '\0';
         }
