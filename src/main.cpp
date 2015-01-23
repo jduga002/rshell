@@ -8,7 +8,7 @@
 #include <stdio.h>
 using namespace std;
 
-const int MAX_LINE_LENGTH = 500;
+const int MAX_LINE_LENGTH = 2048;
 
 char * getUsername() {
     char *username;
@@ -27,10 +27,11 @@ void getHost(char *hostName) {
     }
 }
 
-bool exec_command(char **command, int num_words) { 
+int exec_command(char **command, int num_words) { 
     if (strcmp(command[0],"exit") == 0 && num_words == 1)
         exit(0);
     
+    int x = 1;
     int pid = fork();
 
     if (pid == -1) {
@@ -46,67 +47,67 @@ bool exec_command(char **command, int num_words) {
         exit(0);
     } 
     else { // parent
-        if (-1 == wait(0)) { // parent function waits for child
+        if (-1 == wait(&x)) { // parent function waits for child
             perror("wait");  // program exits if there is an error
             exit(1);
         }
     }
-    return true;
+    return x;
 }
 
-void exec_commands(char *commands) {
+char **words(char* command, int &size) {
+    vector<char *> v;
+    char *str_token = strtok(command, " \t");
+    while (str_token != NULL) {
+        v.push_back(str_token);
+        str_token = strtok(NULL, " \t");
+    }
+    size = v.size();
+    char **args;
+    strcpy(args[0]," ");
+    for (int i = 0; i < size; i++) {
+        strcpy(args[i],v.at(i));
+    }
+    return args;
+}
+
+void exec_commands(const vector<char *> &v_commands) {
+    for (unsigned i = 0; i < v_commands.size(); i+=2) {
+        int size = 0;
+        char **command = words(v_commands.at(i), size);
+        int x = exec_command(command, size);
+        if ((x == 0 && strcmp(v_commands.at(i+1), "&&") == 0)
+         || (x != 0 && strcmp(v_commands.at(i+1), "||") == 0)) {
+        }
+    }
+}
+
+void parse_commands(char *commands) {
     vector<char *> v_commands;
-    char *ptr = commands;
     unsigned size = strlen(commands);
     unsigned i = 0;
-    unsigned j = 0;
+    char *str_token = strtok(commands, "&|");
+    cerr << "commands is now " << commands << endl;
     cerr << "Entering while loop:" << endl;
-    while (i + j < size) {
-        i = strcspn(ptr, "&|");
-        cerr << "  i is " << i << endl;
-        if (i + j == size || i + j == size - 1) {
-            cerr << "    Reached end of line." << endl;
-            v_commands.push_back(ptr);
-            break;
+    while (str_token != NULL) {
+        cerr << "Assigning first command to v_commands" << endl;
+        v_commands.push_back(str_token);
+        cerr << v_commands.at(v_commands.size()-1) << endl;
+        i += strlen(str_token) + 1;
+        if (i < size) {
+            char connector[3];
+            cerr << "connector is " << commands[i] << endl;
+            cerr << "i is " << i << endl;
+            connector[0] = commands[i];
+            connector[1] = commands[i];
+            connector[2] = '\0';
+            i ++;
+            v_commands.push_back(connector);
+            cerr << v_commands.at(v_commands.size()-1) << endl;
         }
-        else if (ptr[i+j] == ptr[i+j+1]) {
-            cerr << "    " << ptr[i+j] << ptr[i+j] << " found" << endl;
-            char *string_copy;
-            cerr << "Char * string_copy, made; will copy ptr to it." << endl;
-            strncpy(string_copy, ptr, i+j);
-            cerr << "    Going to append null char." << endl;
-            string_copy[i + j + 1] = '\0';
-            v_commands.push_back(string_copy);
-            ptr += i + j + 2;
-            i = 0; j = 0;
-            size = strlen(ptr);
-        }
-        else {
-            ptr += i + j + 1;
-            j = i;
-            i = 0;
-        }
-    for (unsigned k = 0; k < v_commands.size(); k ++)
-        cout << v_commands.at(k) << endl;
+        str_token = strtok(NULL, "&|");
     }
-/*
-    char *string_token;
-    string_token = strtok(commands, " ");
-    while (string_token != NULL) {
-        v_words.push_back(string_token);
-        string_token = strtok(NULL, " ");
-    }
-    
-    int size = 0;
-    char **command = NULL;
-    for (unsigned i = 0; i < v_words.size(); i++) {
-        if (strcmp(v_words.at(i), "&&") == 0) { 
-            bool success = exec_command(command, size);
-            if (!success) {
-                
-            }
-        }
-    }*/
+    exec_commands(v_commands);
 }
 
 int main() {
@@ -134,7 +135,7 @@ int main() {
         for (unsigned i = 0; i < v_commands.size(); i++) {
             //run the command between each semicolon
             cerr << v_commands.at(i) << endl;
-            exec_commands(v_commands.at(i));
+            parse_commands(v_commands.at(i));
         }
 
         cout << username << "@" << hostName << "$ " << flush;
