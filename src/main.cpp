@@ -10,6 +10,7 @@ using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
 const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
+const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
 
 char * getUsername() {
     char *username;
@@ -124,6 +125,16 @@ void parse_commands(char *commands) {
     exec_commands(v_commands);
 }
 
+bool allSpaces(char *line) {
+    unsigned size = strlen(line);
+    for (unsigned i = 0; i < size; i ++) {
+        if (!(line[i] == ' ' || line[i] == '\t') ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool isError(char* line) {
     for (unsigned j = 0; j < strlen(line) - 1; j++) {
         if (line[j] == ';') {
@@ -169,14 +180,18 @@ int main() {
     char line[MAX_LINE_LENGTH]; 
     cout << username << "@" << hostName << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
-    if (line[0] != '#') {
-        strcpy(line,strtok(line, "#"));
+    line[MAX_LINE_LENGTH-1] = '\0';
+    if (strlen(line) == MAX_LINE_LENGTH - 1) {
+        cerr << LENGTH_ERROR << endl;
+        exit(1);
     }
 
     while (strcmp(line, "exit") != 0) {
-        if (line[0] != '#') {
-            
-            if (!isError(line)) {
+        if (strlen(line) == 0) { /* do nothing */ }
+        else if (line[0] != '#') {
+            strcpy(line, strtok(line, "#"));
+            if (allSpaces(line)) { /* do nothing */ }
+            else if (!isError(line)) {
                 vector<char *> v_commands;
                 char *string_token = strtok(line, ";");
 
@@ -197,8 +212,10 @@ int main() {
         cout << username << "@" << hostName << "$ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
 
-        if (line[0] != '#') {
-            strcpy(line, strtok(line, "#"));
+        line[MAX_LINE_LENGTH-1] = '\0';
+        if (strlen(line) == MAX_LINE_LENGTH - 1) {
+            cerr << LENGTH_ERROR << endl;
+            exit(1);
         }
     }
 
