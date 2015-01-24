@@ -22,6 +22,8 @@ then rshell will execute the `ls` command to print files in the current director
 Then it will print to the terminal `hello`, and if that command succeeds, it will make a new directory called `test` with the `mkdir` command.
 If either the `echo hello` or `mkdir test` commands failed, then the `echo world` command will be executed.
 
+Typing the connectors `&&` and `||` at very end of command will result in error.
+
 rshell also allows for the use of comments by typing in the `#` character.
 Anything after `#` on a line will be ignored.
 
@@ -39,12 +41,16 @@ To exit rshell, just type `exit`.
 
  Enjoy!
 
-### Limitations and Bugs
+### Bugs
 
-This project is only able to run executables located in places such as `/bin` or `usr/bin/` like `ls`, but not some bash commands such as `cd`.
+This project is only able to run executables located in `/bin` or `usr/bin/` like `ls`, or in filepath the user specifies, but not common bash commands such as `cd`.
 Look for this feature to be coming soon!
 
-Also, this project is currently under construction and does not work yet.
+Other bugs:
+
+1. Error messages for syntax errors with connectors are too general.
+
+2. Commands typed before a `;` will run when not supposed to when certain syntax error occurs with `&&` or `||`.
 
 If you find any bugs in this project, create an issue on GitHub, or, if you want, fix it yourself and issue a pull request.
 
