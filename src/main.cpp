@@ -131,31 +131,33 @@ int main() {
     char line[MAX_LINE_LENGTH]; 
     cout << username << "@" << hostName << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
-//    if (line[0] == '#') {
- //       line[0] = '\0';
- //   }
-    strcpy(line,strtok(line, "#"));
+    if (line[0] != '#') {
+        strcpy(line,strtok(line, "#"));
+    }
 
     while (strcmp(line, "exit") != 0) {
-        vector<char *> v_commands;
-        char *string_token = strtok(line, ";");
+        if (line[0] != '#') {
+            vector<char *> v_commands;
+            char *string_token = strtok(line, ";");
 
-        while (string_token != NULL) {
-            v_commands.push_back(string_token);
-            string_token = strtok(NULL, ";");
+            while (string_token != NULL) {
+                v_commands.push_back(string_token);
+                string_token = strtok(NULL, ";");
+            }
+
+            for (unsigned i = 0; i < v_commands.size(); i++) {
+                //run the command between each semicolon
+                parse_commands(v_commands.at(i));
+            }
         }
-
-        for (unsigned i = 0; i < v_commands.size(); i++) {
-            //run the command between each semicolon
-            parse_commands(v_commands.at(i));
-        }
-
         cout << username << "@" << hostName << "$ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
   //      if (line[0] == '#') { 
    //         line[0] = '\0';
     //    }
-        strcpy(line, strtok(line, "#"));
+        if (line[0] != '#') {
+            strcpy(line, strtok(line, "#"));
+        }
     }
 
     return 0;
