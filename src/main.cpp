@@ -81,12 +81,11 @@ void exec_commands(const vector<char *> &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
         int size = 0;
         char **command = words(v_commands.at(i), size);
-        for (int j = 0; j < size; j++) {
-            cerr << command[j] << endl;
-        }
+        cerr << "executing command: " << command[0] << endl;
         int x = exec_command(command, size);
+        if (x == 0) cerr << "command succeeded" << endl;
+        else cerr << "command failed" << endl;
         for (int j = 0; j < size; j++) {
-            cerr << "freeing at entry " << j << endl;
             free(command[j]);
         }
         free(command);
@@ -102,24 +101,17 @@ void parse_commands(char *commands) {
     unsigned size = strlen(commands);
     unsigned i = 0;
     char *str_token = strtok(commands, "&|");
-    cerr << "commands is now " << commands << endl;
-    cerr << "Entering while loop:" << endl;
     while (str_token != NULL) {
-        cerr << "Assigning first command to v_commands" << endl;
         v_commands.push_back(str_token);
-        cerr << v_commands.at(v_commands.size()-1) << endl;
         i += strlen(str_token) + 1;
         if (i < size) {
             char connector[3];
             
-            cerr << "i is " << i << endl;
             connector[0] = commands[i];
             connector[1] = commands[i];
             connector[2] = '\0';
-cerr << "connector is " << connector  << endl;
             i ++;
             v_commands.push_back(connector);
-            cerr << v_commands.at(v_commands.size()-1) << endl;
         }
         str_token = strtok(NULL, "&|");
     }
@@ -142,7 +134,6 @@ int main() {
     while (strcmp(line, "exit") != 0) {
         vector<char *> v_commands;
         char *string_token = strtok(line, ";");
-        cerr << "string_token: " << string_token << endl;
 
         while (string_token != NULL) {
             v_commands.push_back(string_token);
@@ -151,7 +142,6 @@ int main() {
 
         for (unsigned i = 0; i < v_commands.size(); i++) {
             //run the command between each semicolon
-            cerr << v_commands.at(i) << endl;
             parse_commands(v_commands.at(i));
         }
 
