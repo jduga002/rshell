@@ -9,6 +9,7 @@
 using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
+const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
 
 char * getUsername() {
     char *username;
@@ -137,6 +138,14 @@ int main() {
 
     while (strcmp(line, "exit") != 0) {
         if (line[0] != '#') {
+            bool isError = false;
+            for (unsigned j = 0; j < strlen(line) - 1; j++) {
+                if (line[j] == ';' && line[j+1] == ';') {
+                    isError = true;
+                    break;
+                }
+            }
+            if (!isError) {
             vector<char *> v_commands;
             char *string_token = strtok(line, ";");
 
@@ -149,12 +158,13 @@ int main() {
                 //run the command between each semicolon
                 parse_commands(v_commands.at(i));
             }
+            }
+            else cerr << ERROR << endl;
         }
+
         cout << username << "@" << hostName << "$ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
-  //      if (line[0] == '#') { 
-   //         line[0] = '\0';
-    //    }
+
         if (line[0] != '#') {
             strcpy(line, strtok(line, "#"));
         }
