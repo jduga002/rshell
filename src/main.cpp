@@ -12,20 +12,20 @@ const int MAX_LINE_LENGTH = 2048;
 const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
 
+// error in function; will go unused
 char * getUsername() {
     char *username;
     username = getlogin();
-    if (!username) {
+    if (username == NULL) {
         perror("getlogin() error");
-        strcpy(username, "user");
     }
     return username;
 }
 
+// probably error in this function, so will go unused
 void getHost(char *hostName) {
     if (-1 == gethostname(hostName, MAX_LINE_LENGTH - 1) ) { 
         perror("gethostname() error");
-        strcpy(hostName, "hostName");
     }
 }
 
@@ -124,7 +124,7 @@ void parse_commands(char *commands) {
     char *str_token = strtok(commands, "&|");
     while (str_token != NULL) {
         v_commands.push_back(str_token);
-        if (allSpaces(v_commands.at(i))) {
+        if (allSpaces(v_commands.at(v_commands.size()-1))) {
             cerr << ERROR << endl;
             return;
         }
@@ -136,6 +136,7 @@ void parse_commands(char *commands) {
         }
         str_token = strtok(NULL, "&|");
     }
+    cerr << "entering exec_commands" << endl;
     exec_commands(v_commands);
 }
 
@@ -177,12 +178,9 @@ bool isError(char* line) {
 }
 
 int main() {
-    char hostName[MAX_LINE_LENGTH];
-    getHost(hostName);
-    char *username = getUsername();
 
     char line[MAX_LINE_LENGTH]; 
-    cout << username << "@" << hostName << "$ ";
+    cerr << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
     line[MAX_LINE_LENGTH-1] = '\0';
     if (strlen(line) == MAX_LINE_LENGTH - 1) {
@@ -213,7 +211,7 @@ int main() {
             else cerr << ERROR << endl;
         }
 
-        cout << username << "@" << hostName << "$ " << flush;
+        cout << "$ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
