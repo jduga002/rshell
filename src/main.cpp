@@ -124,6 +124,40 @@ void parse_commands(char *commands) {
     exec_commands(v_commands);
 }
 
+bool isError(char* line) {
+    for (unsigned j = 0; j < strlen(line) - 1; j++) {
+        if (line[j] == ';') {
+            if ( line[j+1] == ';')
+                return true;
+            else if (j == 0)  
+                return true;
+            else if (line[j-1] == '&' || line[j-1] == '|')
+                return true;
+            else if (line[j+1] == '&' || line[j+1] == '|')
+                return true;
+        }
+        else if (line[j] == '&' || line[j] == '|') {
+            if (j == 0) 
+                return true;
+            else if (line[j-1] == '&' || line[j-1] == '|') {
+                if (line[j-1] != line[j]) {
+                    cerr << "use of either &| or |&" << endl;
+                    return true;
+                }
+                else if (line[j+1] == '&' || line[j+1] == '|') {
+                    cerr << "three connectors in a row" << endl;
+                    return true;
+                }
+            }
+            else if (line[j+1] != '&' && line[j+1] != '|') {
+                cerr << "use of only one of & or |" << endl;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 int main() {
     char hostName[MAX_LINE_LENGTH];
     getHost(hostName);
@@ -138,27 +172,22 @@ int main() {
 
     while (strcmp(line, "exit") != 0) {
         if (line[0] != '#') {
-            bool isError = false;
-            for (unsigned j = 0; j < strlen(line) - 1; j++) {
-                if (line[j] == ';' && line[j+1] == ';') {
-                    isError = true;
-                    break;
+            
+            if (!isError(line)) {
+                vector<char *> v_commands;
+                char *string_token = strtok(line, ";");
+
+                while (string_token != NULL) {
+                    v_commands.push_back(string_token);
+                    string_token = strtok(NULL, ";");
+                }
+
+                for (unsigned i = 0; i < v_commands.size(); i++) {
+                    //run the command between each semicolon
+                    parse_commands(v_commands.at(i));
                 }
             }
-            if (!isError) {
-            vector<char *> v_commands;
-            char *string_token = strtok(line, ";");
 
-            while (string_token != NULL) {
-                v_commands.push_back(string_token);
-                string_token = strtok(NULL, ";");
-            }
-
-            for (unsigned i = 0; i < v_commands.size(); i++) {
-                //run the command between each semicolon
-                parse_commands(v_commands.at(i));
-            }
-            }
             else cerr << ERROR << endl;
         }
 
