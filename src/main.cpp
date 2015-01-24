@@ -105,6 +105,16 @@ void exec_commands(const vector<char *> &v_commands) {
     }
 }
 
+bool allSpaces(char *line) {
+    unsigned size = strlen(line);
+    for (unsigned i = 0; i < size; i ++) {
+        if (!(line[i] == ' ' || line[i] == '\t') ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void parse_commands(char *commands) {
     vector<char *> v_commands;
     unsigned size = strlen(commands);
@@ -114,6 +124,10 @@ void parse_commands(char *commands) {
     char *str_token = strtok(commands, "&|");
     while (str_token != NULL) {
         v_commands.push_back(str_token);
+        if (allSpaces(v_commands.at(i))) {
+            cerr << ERROR << endl;
+            return;
+        }
         i += strlen(str_token) + 1;
         if (i < size) {
             if (commands[i] == '&') v_commands.push_back(andand);
@@ -123,16 +137,6 @@ void parse_commands(char *commands) {
         str_token = strtok(NULL, "&|");
     }
     exec_commands(v_commands);
-}
-
-bool allSpaces(char *line) {
-    unsigned size = strlen(line);
-    for (unsigned i = 0; i < size; i ++) {
-        if (!(line[i] == ' ' || line[i] == '\t') ) {
-            return false;
-        }
-    }
-    return true;
 }
 
 bool isError(char* line) {
