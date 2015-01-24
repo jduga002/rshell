@@ -1,0 +1,207 @@
+Script started on Fri 23 Jan 2015 11:53:59 PM PST
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell 
+$ #Testing comment
+$ #T                 #Testing spaces before comments
+$ #Testing commands after comments: ls
+$ #Te  Pa  Part 1: Funcit  tion execution
+$ ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ ls -a
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+$ ls -a -l
+total 52
+drwxr-xr-x  6 dr1zz1tdudden dr1zz1tdudden  4096 Jan 19 13:28 .
+drwxr-xr-x 10 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:30 ..
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:38 bin
+drwxr-xr-x  8 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:39 .git
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden 18027 Jan 17 09:51 LICENSE
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden   178 Jan 18 10:58 Makefile
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden  2127 Jan 19 13:28 README.md
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:46 src
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:53 tests
+$ ls -mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm                                                                                          ^[[B^[[C           mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+bin, LICENSE, Makefile, README.md, src, tests
+$ #That tested really long flag
+$ #now test lots of flags
+$ ls -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l -l 
+total 40
+drwxr-xr-x 2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:38 bin
+-rw-r--r-- 1 dr1zz1tdudden dr1zz1tdudden 18027 Jan 17 09:51 LICENSE
+-rw-r--r-- 1 dr1zz1tdudden dr1zz1tdudden   178 Jan 18 10:58 Makefile
+-rw-r--r-- 1 dr1zz1tdudden dr1zz1tdudden  2127 Jan 19 13:28 README.md
+drwxr-xr-x 2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:46 src
+drwxr-xr-x 2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:53 tests
+$ ls ls ls ls           #Multiple commands in a row; no connector
+$ ls ls ls ls ls
+ls: cannot access ls: No such file or directory
+ls: cannot access ls: No such file or directory
+ls: cannot access ls: No such file or directory
+ls: cannot access ls: No such file or directory
+$ #Test gibbersi  ish command
+$ dsdkldsj kdsjlf         
+execvp: No such file or directory
+$ #Gibberish command with flags
+$ dk dskjf ldsjsdlkjf dssdklfj 
+execvp: No such file or directory
+$ #gibbers ish foloow  wed by command
+$ dkfjkd ls
+execvp: No such file or directory
+$   #Testing spaces and tabs with commands:
+$              			          ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ ls          			  
+bin  LICENSE  Makefile	README.md  src	tests
+$ ls       		 -a
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+$ ls        -a 		-l
+total 52
+drwxr-xr-x  6 dr1zz1tdudden dr1zz1tdudden  4096 Jan 19 13:28 .
+drwxr-xr-x 10 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:30 ..
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:38 bin
+drwxr-xr-x  8 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:39 .git
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden 18027 Jan 17 09:51 LICENSE
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden   178 Jan 18 10:58 Makefile
+-rw-r--r--  1 dr1zz1tdudden dr1zz1tdudden  2127 Jan 19 13:28 README.md
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:46 src
+drwxr-xr-x  2 dr1zz1tdudden dr1zz1tdudden  4096 Jan 23 23:53 tests
+$ #can execute commands other than those in bin   /bin or usr/bin
+$ bin/rshell
+$ exit
+$ #comment after commands                       #Part II: Connec                #all spaces
+$         			
+$ #just newline char
+$ 
+$ #Part II: Connectors
+$ ;
+$ ;;;;;;
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ ; #testing connectors without parameters (differenc t combinations)
+$ ;&&;;;;
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ &
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ ||
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ true & ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ true      #y testing correct usage
+$ tre ue && ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ false ||  && ls
+$ true || ls
+$ false || ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ #flags with           ls; ls
+bin  LICENSE  Makefile	README.md  src	tests
+bin  LICENSE  Makefile	README.md  src	tests
+$ #lots of connectors on one line
+$ true && ls; echo success
+bin  LICENSE  Makefile	README.md  src	tests
+success
+$ false||   || true && ls; echo succes
+bin  LICENSE  Makefile	README.md  src	tests
+succes
+$ true&&
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ ||true
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ ;false     ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ #no spacing with connector
+$ ls&&echo          true&&ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ false||ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ #lots of spacing with connectors
+$ ls           ;          ls -a  
+bin  LICENSE  Makefile	README.md  src	tests
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+$      ls   ;    ;    ls
+bin  LICENSE  Makefile	README.md  src	tests
+bin  LICENSE  Makefile	README.md  src	tests
+$ true                  && ls
+bin  LICENSE  Makefile	README.md  src	tests
+$                   false ||   ls
+bin  LICENSE  Makefile	README.md  src	tests
+$ spacing ag    with no a                 #spacing with no argument
+$ #wiht connectors
+$          && ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ false ||                       
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ $ #misud sed &| symbol
+$ ls &| ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ #; nes xt to && and ||
+$ l true &&; ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ false; || ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ error       #error and nonerror part separated by ;
+$ ls; || ls
+bin  LICENSE  Makefile	README.md  src	tests
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ && ls; ls
+rshell: syntax error on connector: use ';', '&&', or '||'
+$ #Part 3  : Testing comments (already a partially done)
+$ #comments after commands
+$ ls #testing
+bin  LICENSE  Makefile	README.md  src	tests
+$ sp  #spacing with comments after commands
+$                  ls # testing
+bin  LICENSE  Makefile	README.md  src	tests
+$ ls                  #testing
+bin  LICENSE  Makefile	README.md  src	tests
+$ #comments with args with flags
+$ ls -a  #testing
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+$ #comments with connectors
+$ ls; echo e success  #testing
+bin  LICENSE  Makefile	README.md  src	tests
+success
+$ true && ls #testing
+bin  LICENSE  Makefile	README.md  src	tests
+$ flas   alse || ls #ts estn ing
+bin  LICENSE  Makefile	README.md  src	tests
+$ #connectos s rs after comments
+$ # ls && ls
+$               #echo success  ; false || ls
+$ #Part 4: Testing exit
+$ #exit by itself
+$ exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ #exit with spaces
+$                  exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ #exit with spaces after
+$ exit             
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ #exit with spaces before and after
+$          exit            
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ exit =      #w exit with args
+$ exit --now
+execvp: No such file or directory
+$ #eit  xit with connectors
+$ true && exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ false || exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ ls; exit;
+bin  LICENSE  Makefile	README.md  src	tests
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ e #exit in middlw   e s of list of commands
+$ ls -a  ; true || exit; echo did not exit (yay!); false || exit; ls
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+did not exit (yay!)
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell 
+$ #exit with flags in middlw e of list of commands
+$ ls -a; true || exit --now; echo did not exit (yay!); false || exit --now; echo shoud ld still be in rshell
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+did not exit (yay!)
+execvp: No such file or directory
+should still be in rshell
+$ test=     #tests concluded
+$ exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m exit
+Script done on Sat 24 Jan 2015 12:21:15 AM PST
