@@ -155,6 +155,9 @@ bool isError(char* line) {
             }
         }
     }
+    char last = line[strlen(line)-1];
+    if (last == '&' || last == '|')
+        return true;
     return false;
 }
 
