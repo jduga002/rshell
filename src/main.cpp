@@ -63,11 +63,17 @@ char **words(char* command, int &size) {
         str_token = strtok(NULL, " \t");
     }
     size = v.size();
-    char **args;
-    strcpy(args[0]," ");
+    unsigned max_char_size = 0;
+    for (unsigned i = 0; i < v.size(); i++) {
+        if (strlen(v.at(i)) > max_char_size)
+            max_char_size = strlen(v.at(i));
+    }
+    char **args = (char **)malloc(sizeof(char *) * size + 1);
     for (int i = 0; i < size; i++) {
+        args[i] = (char*)malloc(sizeof(char) * max_char_size);
         strcpy(args[i],v.at(i));
     }
+    args[size] = NULL;
     return args;
 }
 
@@ -75,9 +81,18 @@ void exec_commands(const vector<char *> &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
         int size = 0;
         char **command = words(v_commands.at(i), size);
+        for (int j = 0; j < size; j++) {
+            cerr << command[j] << endl;
+        }
         int x = exec_command(command, size);
-        if ((x == 0 && strcmp(v_commands.at(i+1), "&&") == 0)
-         || (x != 0 && strcmp(v_commands.at(i+1), "||") == 0)) {
+        for (int j = 0; j < size; j++) {
+            cerr << "freeing at entry " << j << endl;
+            free(command[j]);
+        }
+        free(command);
+        while ((i+1 < v_commands.size()) && ((x != 0 && strcmp(v_commands.at(i+1), "&&") == 0)
+         || (x == 0 && strcmp(v_commands.at(i+1), "||") == 0))) {
+            i += 2;
         }
     }
 }
@@ -96,11 +111,12 @@ void parse_commands(char *commands) {
         i += strlen(str_token) + 1;
         if (i < size) {
             char connector[3];
-            cerr << "connector is " << commands[i] << endl;
+            
             cerr << "i is " << i << endl;
             connector[0] = commands[i];
             connector[1] = commands[i];
             connector[2] = '\0';
+cerr << "connector is " << connector  << endl;
             i ++;
             v_commands.push_back(connector);
             cerr << v_commands.at(v_commands.size()-1) << endl;
@@ -118,14 +134,15 @@ int main() {
     char line[MAX_LINE_LENGTH]; 
     cout << username << "@" << hostName << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
-    if (line[0] == '#') {
-        line[0] = '\0';
-    }
+//    if (line[0] == '#') {
+ //       line[0] = '\0';
+ //   }
     strcpy(line,strtok(line, "#"));
 
     while (strcmp(line, "exit") != 0) {
         vector<char *> v_commands;
         char *string_token = strtok(line, ";");
+        cerr << "string_token: " << string_token << endl;
 
         while (string_token != NULL) {
             v_commands.push_back(string_token);
@@ -140,9 +157,9 @@ int main() {
 
         cout << username << "@" << hostName << "$ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
-        if (line[0] == '#') { 
-            line[0] = '\0';
-        }
+  //      if (line[0] == '#') { 
+   //         line[0] = '\0';
+    //    }
         strcpy(line, strtok(line, "#"));
     }
 
