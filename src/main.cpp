@@ -78,20 +78,27 @@ char **words(char* command, int &size) {
 }
 
 void exec_commands(const vector<char *> &v_commands) {
+    for (unsigned i = 0; i < v_commands.size(); i++) cerr << v_commands.at(i) << endl;
+    int x = 0;
+    char connector[] = "&&";
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
-        int size = 0;
-        char **command = words(v_commands.at(i), size);
-        cerr << "executing command: " << command[0] << endl;
-        int x = exec_command(command, size);
-        if (x == 0) cerr << "command succeeded" << endl;
-        else cerr << "command failed" << endl;
-        for (int j = 0; j < size; j++) {
-            free(command[j]);
+        cerr << "i is " << i << endl;
+        cerr << "x is " << x << endl;
+        cerr << "connector is " << connector << endl;
+        if ( (x == 0 && strcmp(connector,"&&") == 0) || (x != 0 && strcmp(connector,"||") == 0) ) {
+            int size = 0;
+            char **command = words(v_commands.at(i), size);
+            cerr << "executing command: " << command[0] << endl;
+            x = exec_command(command, size);
+            if (x == 0) cerr << "command succeeded" << endl;
+            else cerr << "command failed" << endl;
+            for (int j = 0; j < size; j++) {
+                free(command[j]);
+            }
+            free(command);
         }
-        free(command);
-        while ((i+1 < v_commands.size()) && ((x != 0 && strcmp(v_commands.at(i+1), "&&") == 0)
-         || (x == 0 && strcmp(v_commands.at(i+1), "||") == 0))) {
-            i += 2;
+        if ( i < v_commands.size() - 1 ) {
+            strcpy(connector, v_commands.at(i+1));
         }
     }
 }
@@ -99,19 +106,17 @@ void exec_commands(const vector<char *> &v_commands) {
 void parse_commands(char *commands) {
     vector<char *> v_commands;
     unsigned size = strlen(commands);
+    char andand[] = "&&";
+    char oror[] = "||";
     unsigned i = 0;
     char *str_token = strtok(commands, "&|");
     while (str_token != NULL) {
         v_commands.push_back(str_token);
         i += strlen(str_token) + 1;
         if (i < size) {
-            char connector[3];
-            
-            connector[0] = commands[i];
-            connector[1] = commands[i];
-            connector[2] = '\0';
+            if (commands[i] == '&') v_commands.push_back(andand);
+            else if (commands[i] == '|') v_commands.push_back(oror);
             i ++;
-            v_commands.push_back(connector);
         }
         str_token = strtok(NULL, "&|");
     }
