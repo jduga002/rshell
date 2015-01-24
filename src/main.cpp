@@ -80,20 +80,13 @@ char **words(char* command, int &size) {
 }
 
 void exec_commands(const vector<char *> &v_commands) {
-    for (unsigned i = 0; i < v_commands.size(); i++) cerr << v_commands.at(i) << endl;
     int x = 0;
     char connector[] = "&&";
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
-        cerr << "i is " << i << endl;
-        cerr << "x is " << x << endl;
-        cerr << "connector is " << connector << endl;
         if ( (x == 0 && strcmp(connector,"&&") == 0) || (x != 0 && strcmp(connector,"||") == 0) ) {
             int size = 0;
             char **command = words(v_commands.at(i), size);
-            cerr << "executing command: " << command[0] << endl;
             x = exec_command(command, size);
-            if (x == 0) cerr << "command succeeded" << endl;
-            else cerr << "command failed" << endl;
             for (int j = 0; j < size; j++) {
                 free(command[j]);
             }
@@ -136,7 +129,6 @@ void parse_commands(char *commands) {
         }
         str_token = strtok(NULL, "&|");
     }
-    cerr << "entering exec_commands" << endl;
     exec_commands(v_commands);
 }
 
@@ -157,16 +149,13 @@ bool isError(char* line) {
                 return true;
             else if (line[j-1] == '&' || line[j-1] == '|') {
                 if (line[j-1] != line[j]) {
-                    cerr << "use of either &| or |&" << endl;
                     return true;
                 }
                 else if (line[j+1] == '&' || line[j+1] == '|') {
-                    cerr << "three connectors in a row" << endl;
                     return true;
                 }
             }
             else if (line[j+1] != '&' && line[j+1] != '|') {
-                cerr << "use of only one of & or |" << endl;
                 return true;
             }
         }
