@@ -1,7 +1,7 @@
 #include <sys/types.h>
 #include <dirent.h>
+#include <stdio.h>
 #include <errno.h>
-
 #include <iostream>
 
 using namespace std;
@@ -15,9 +15,17 @@ using namespace std;
 int main()
 {
     DIR *dirp = opendir(".");
-    dirent *direntp;
-    while ((direntp = readdir(dirp)))
-        cout << direntp->d_name << endl;  // use stat here to find attributes of file
-    closedir(dirp);
+    if (dirp == NULL) {
+        perror("opendir failed");
+    }
+    else {
+        dirent *direntp;
+        while ((direntp = readdir(dirp)))
+            cout << direntp->d_name << endl;  // use stat here to find attributes of file
+        perror("readdir may have failed");
+        if (-1 ==  closedir(dirp)) {
+            perror("closedir failed");
+        }
+    }
 }
 
