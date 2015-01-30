@@ -9,8 +9,8 @@
 
 using namespace std;
 
-void ls() {
-    DIR *dirp = opendir(".");
+void ls(string dir) {
+    DIR *dirp = opendir(dir.c_str());
     if (dirp == NULL) {
         perror("opendir failed");
         exit(1);
@@ -37,7 +37,15 @@ int main(int argc, char **argv) {
         if (argv[i][0] != '-') v_dirs.push_back(argv[i]);
         else v_flags.push_back(argv[i]);
     }
-    ls();
+    if (v_dirs.empty()) v_dirs.push_back(".");
+    
+    for (unsigned i = 0; i < v_dirs.size(); i++) {
+        ls(v_dirs.at(i));
+    }
+    /*string h = "hey";
+    string i = "ick";
+    bool isLess = h < i;
+    cout << isLess << endl;
+    cout << true << endl;*/
     return 0;
 }
-
