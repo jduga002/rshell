@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
 void ls() {
-DIR *dirp = opendir(".");
+    DIR *dirp = opendir(".");
     if (dirp == NULL) {
         perror("opendir failed");
         exit(1);
@@ -28,7 +30,13 @@ DIR *dirp = opendir(".");
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
+    vector<string> v_dirs;
+    vector<string> v_flags;
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] != '-') v_dirs.push_back(argv[i]);
+        else v_flags.push_back(argv[i]);
+    }
     ls();
     return 0;
 }
