@@ -7,13 +7,16 @@
 #include <vector>
 #include <string>
 
+int PROGRAM_SUCCESS = 0;
+
 using namespace std;
 
 void ls(string dir) {
     DIR *dirp = opendir(dir.c_str());
     if (dirp == NULL) {
         perror("opendir failed");
-        exit(1);
+        PROGRAM_SUCCESS = 1;
+        return;
     }
     dirent *direntp;
     while ((direntp = readdir(dirp))) {
@@ -21,12 +24,11 @@ void ls(string dir) {
     }
     if (errno == EBADF) {  // checks if readdir exited loop (returned NULL) because of error
         perror("readdir failed");
-        exit(1);
+        PROGRAM_SUCCESS = 1;
     }
 
     if (-1 ==  closedir(dirp)) {
         perror("closedir failed");
-        exit(0);
     }
 }
 
@@ -47,5 +49,5 @@ int main(int argc, char **argv) {
     bool isLess = h < i;
     cout << isLess << endl;
     cout << true << endl;*/
-    return 0;
+    return PROGRAM_SUCCESS;
 }
