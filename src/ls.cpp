@@ -40,9 +40,14 @@ int main(int argc, char **argv) {
         else v_flags.push_back(argv[i]);
     }
     if (v_dirs.empty()) v_dirs.push_back(".");
+
+    bool mult_args = false;
+    if (v_dirs.size() >= 2) mult_args = true;
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
+        if (mult_args) cout << v_dirs.at(i) << ":" << endl;
         ls(v_dirs.at(i));
+        if (mult_args && i < v_dirs.size()-1) cout << endl;
     }
     /*string h = "hey";
     string i = "ick";
