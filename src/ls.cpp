@@ -11,7 +11,15 @@ int PROGRAM_SUCCESS = 0;
 
 using namespace std;
 
-void ls(string dir, bool show_all) {
+void ls(string dir, bool &mult_args, bool &show_all, bool &notFirst) {
+    if (notFirst) {
+        cout << endl;
+    }
+    else {
+        notFirst = true;
+    }
+    if (mult_args) cout << dir << ":" << endl;
+
     DIR *dirp = opendir(dir.c_str());
     if (dirp == NULL) {
         perror("opendir failed");
@@ -45,6 +53,7 @@ int main(int argc, char **argv) {
 
     bool mult_args = false;
     bool show_all = false;
+    bool notFirst = false;
     for (unsigned i = 0; i < v_flags.size(); i++) {
         for (unsigned j = 1; j < v_flags.at(i).length(); j++) {
             if (v_flags.at(i).at(j) == 'a')
@@ -54,9 +63,7 @@ int main(int argc, char **argv) {
     if (v_dirs.size() >= 2) mult_args = true;
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
-        if (mult_args) cout << v_dirs.at(i) << ":" << endl;
-        ls(v_dirs.at(i), show_all);
-        if (mult_args && i < v_dirs.size()-1) cout << endl;
+        ls(v_dirs.at(i), mult_args, show_all, notFirst);
     }
     /*string h = "hey";
     string i = "ick";
