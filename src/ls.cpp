@@ -11,12 +11,12 @@ int PROGRAM_SUCCESS = 0;
 
 using namespace std;
 
-void ls(string dir, bool &mult_args, bool &show_all, bool &notFirst) {
-    if (notFirst) {
+void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive) {
+    if (not_first) {
         cout << endl;
     }
     else {
-        notFirst = true;
+        not_first = true;
     }
     if (mult_args) cout << dir << ":" << endl;
 
@@ -53,17 +53,22 @@ int main(int argc, char **argv) {
 
     bool mult_args = false;
     bool show_all = false;
-    bool notFirst = false;
+    bool not_first = false;
+    bool is_recursive = false;
     for (unsigned i = 0; i < v_flags.size(); i++) {
         for (unsigned j = 1; j < v_flags.at(i).length(); j++) {
             if (v_flags.at(i).at(j) == 'a')
                 show_all = true;
+            if (v_flags.at(i).at(j) == 'R') {
+                is_recursive = true;
+                mult_args = true;
+            }
         }
     }
     if (v_dirs.size() >= 2) mult_args = true;
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
-        ls(v_dirs.at(i), mult_args, show_all, notFirst);
+        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive);
     }
     /*string h = "hey";
     string i = "ick";
