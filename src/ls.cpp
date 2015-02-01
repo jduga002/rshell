@@ -81,12 +81,16 @@ int main(int argc, char **argv) {
         for (unsigned j = 1; j < v_flags.at(i).length(); j++) {
             if (v_flags.at(i).at(j) == 'a')
                 show_all = true;
-            if (v_flags.at(i).at(j) == 'R') {
+            else if (v_flags.at(i).at(j) == 'R') {
                 is_recursive = true;
                 mult_args = true;
             }
-            if (v_flags.at(i).at(j) == 'l')
+            else if (v_flags.at(i).at(j) == 'l')
                 is_long = true;
+            else { 
+                cerr << "Invalid option -- \'" << v_flags.at(i).at(j) << "\'" << endl;
+                return 1;
+            }
         }
     }
     if (v_dirs.size() >= 2) mult_args = true;
