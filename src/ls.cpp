@@ -14,7 +14,7 @@ int PROGRAM_SUCCESS = 0;
 
 using namespace std;
 
-void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive) {
+void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive, bool &is_long) {
     struct stat statbuf;
     vector<string> v_dirs;
     if (not_first) {
@@ -60,7 +60,7 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
         perror("closedir failed");
     }
     for (unsigned i = 0; i < v_dirs.size(); i++)
-        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive);
+        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive, is_long);
 }
 
 int main(int argc, char **argv) {
@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
     bool show_all = false;
     bool not_first = false;
     bool is_recursive = false;
+    bool is_long = false;
     for (unsigned i = 0; i < v_flags.size(); i++) {
         for (unsigned j = 1; j < v_flags.at(i).length(); j++) {
             if (v_flags.at(i).at(j) == 'a')
@@ -84,12 +85,14 @@ int main(int argc, char **argv) {
                 is_recursive = true;
                 mult_args = true;
             }
+            if (v_flags.at(i).at(j) == 'l')
+                is_long = true;
         }
     }
     if (v_dirs.size() >= 2) mult_args = true;
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
-        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive);
+        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive, is_long);
     }
     /*string h = "hey";
     string i = "ick";
