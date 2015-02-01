@@ -14,7 +14,7 @@ int PROGRAM_SUCCESS = 0;
 
 using namespace std;
 
-void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive) {
+void ls(string dir, string prepend, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive) {
     struct stat statbuf;
     vector<string> v_dirs;
     if (not_first) {
@@ -23,7 +23,8 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
     else {
         not_first = true;
     }
-    if (mult_args) cout << dir << ":" << endl;
+    if (mult_args) cout << prepend << dir << ":" << endl;
+    prepend += dir + "/";
 
     DIR *dirp = opendir(dir.c_str());
     if (dirp == NULL) {
@@ -37,11 +38,12 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
             cout << direntp->d_name << endl;  // use stat here to find attributes of file
         }
         if (is_recursive) {
-            if (stat(direntp->d_name, &statbuf) == -1) {
-                perror("stat");
-                exit(1);
+            string name = prepend + direntp->d_name;
+            if (stat(name.c_str(), &statbuf) == -1) {
+                perror(("stat: " + name + ":").c_str());
+                PROGRAM_SUCCESS = 1;
             }
-            if (S_ISDIR(statbuf.st_mode)) {
+            else if (S_ISDIR(statbuf.st_mode)) {
                 if (direntp->d_name[0] != '.') v_dirs.push_back(direntp->d_name);
                 else if (show_all && 
                        !(strcmp(direntp->d_name,".")==0 || strcmp(direntp->d_name,"..")==0)) 
@@ -58,7 +60,7 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
         perror("closedir failed");
     }
     for (unsigned i = 0; i < v_dirs.size(); i++)
-        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive);
+        ls(v_dirs.at(i), prepend, mult_args, show_all, not_first, is_recursive);
 }
 
 int main(int argc, char **argv) {
@@ -87,7 +89,7 @@ int main(int argc, char **argv) {
     if (v_dirs.size() >= 2) mult_args = true;
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
-        ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive);
+        ls(v_dirs.at(i), "", mult_args, show_all, not_first, is_recursive);
     }
     /*string h = "hey";
     string i = "ick";
