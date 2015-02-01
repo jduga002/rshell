@@ -9,10 +9,27 @@
 #include <vector>
 #include <string.h>
 #include <string>
+using namespace std;
 
 int PROGRAM_SUCCESS = 0;
 
-using namespace std;
+void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
+    vector<struct stat> v_stats;
+    for (unsigned i = 0; i < v_stats.size(); i++) {
+        struct stat statbuf;
+        if (-1 == stat((dir_loc + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
+            perror("stat");
+            PROGRAM_SUCCESS = 1;
+            return;
+        }
+        v_stats.push_back(statbuf);
+    }
+    unsigned block_cnt = 0;
+    for (unsigned i = 0; i < v_stats.size(); i++) {
+        block_cnt += v_stats.at(i).st_blocks;
+    }
+    cout << "total " << block_cnt << endl;
+}
 
 void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive, bool &is_long) {
     struct stat statbuf;
@@ -32,10 +49,12 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
         PROGRAM_SUCCESS = 1;
         return;
     }
+    vector<dirent *> v_dirents;
     dirent *direntp;
     while ((direntp = readdir(dirp))) {
         if (direntp->d_name[0] != '.' || show_all) {
-            cout << direntp->d_name << endl;  // use stat here to find attributes of file
+            //cout << direntp->d_name << endl;  // use stat here to find attributes of file
+            v_dirents.push_back(direntp);
         }
         if (is_recursive) {
             string name = dir + "/" + direntp->d_name;
@@ -49,6 +68,14 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
                        !(strcmp(direntp->d_name,".")==0 || strcmp(direntp->d_name,"..")==0)) 
                     v_dirs.push_back(name);
             }
+        }
+    }
+    if (is_long) {
+        ls_long(v_dirents, dir + "/");
+    }
+    else {
+        for (unsigned i = 0; i < v_dirents.size(); i++) {
+            cout << v_dirents.at(i)->d_name << endl;
         }
     }
     if (errno == EBADF) {  // checks if readdir exited loop (returned NULL) because of error
