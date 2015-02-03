@@ -26,10 +26,26 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
     }
     unsigned block_cnt = 0;
     for (unsigned i = 0; i < v_stats.size(); i++) {
-        cout << v_dirents.at(i)->d_name << ": " << v_stats.at(i).st_blocks << endl;
+        //cout << v_dirents.at(i)->d_name << ": " << v_stats.at(i).st_blocks << endl;
         block_cnt += v_stats.at(i).st_blocks;
     }
     cout << "total " << block_cnt << endl;
+
+    for (unsigned i = 0; i < v_stats.size(); i++) {
+        cout << ((v_stats.at(i).st_mode & S_IRUSR)?"r":"-");
+        cout << ((v_stats.at(i).st_mode & S_IWUSR)?"w":"-");
+        cout << ((v_stats.at(i).st_mode & S_IXUSR)?"x":"-");
+        cout << ((v_stats.at(i).st_mode & S_IRGRP)?"r":"-");
+        cout << ((v_stats.at(i).st_mode & S_IWGRP)?"w":"-");
+        cout << ((v_stats.at(i).st_mode & S_IXGRP)?"x":"-");
+        cout << ((v_stats.at(i).st_mode & S_IROTH)?"r":"-");
+        cout << ((v_stats.at(i).st_mode & S_IWOTH)?"w":"-");
+        cout << ((v_stats.at(i).st_mode & S_IXOTH)?"x":"-");
+        cout << " " << v_stats.at(i).st_nlink;
+        cout << " " << v_stats.at(i).st_uid;
+        cout << " " << v_stats.at(i).st_gid;
+        cout << " " << v_dirents.at(i)->d_name << endl;
+    }
 }
 
 void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_recursive, bool &is_long) {
