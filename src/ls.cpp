@@ -15,7 +15,7 @@ int PROGRAM_SUCCESS = 0;
 
 void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
     vector<struct stat> v_stats;
-    for (unsigned i = 0; i < v_stats.size(); i++) {
+    for (unsigned i = 0; i < v_dirents.size(); i++) {
         struct stat statbuf;
         if (-1 == stat((dir_loc + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
             perror("stat");
@@ -26,6 +26,7 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
     }
     unsigned block_cnt = 0;
     for (unsigned i = 0; i < v_stats.size(); i++) {
+        cout << v_dirents.at(i)->d_name << ": " << v_stats.at(i).st_blocks << endl;
         block_cnt += v_stats.at(i).st_blocks;
     }
     cout << "total " << block_cnt << endl;
