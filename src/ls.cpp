@@ -13,6 +13,7 @@
 using namespace std;
 
 int PROGRAM_SUCCESS = 0;
+const char * const FORMAT = "%b %d %R";
 
 bool dirent_cmp(const dirent * const i, const dirent * const j) {
     if (strcmp(i->d_name, j->d_name) < 0) return true;
@@ -50,6 +51,20 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         cout << " " << v_stats.at(i).st_nlink;
         cout << " " << v_stats.at(i).st_uid;
         cout << " " << v_stats.at(i).st_gid;
+        cout << " " << v_stats.at(i).st_size;
+        struct tm result;
+        if (NULL == localtime_r(&(v_stats.at(i).st_mtime), &result)) {
+            perror("localtime_r");
+            cout << " ????????????";
+        }
+        else {
+            char time[256];
+            if (strftime(time, 256, FORMAT, &result)) {
+                cout << " " << time;
+            }
+            else cout << " ????????????";
+        }
+        //cout << " " << v_stats.at(i).st_mtime;
         cout << " " << v_dirents.at(i)->d_name << endl;
     }
 }
