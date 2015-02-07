@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <pwd.h>
+#include <grp.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -60,7 +61,15 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         else {
             cout << " " << p_uid->pw_name;
         }
-        cout << " " << v_stats.at(i).st_gid;
+        //cout << " " << v_stats.at(i).st_gid;
+        struct group * g_gid = getgrgid(v_stats.at(i).st_gid);
+        if (g_gid == NULL) {
+            perror("getgrgid");
+            cout << " ??";
+        }
+        else {
+            cout << " " << g_gid->gr_name;
+        }
         cout << " " << v_stats.at(i).st_size;
         struct tm result;
         if (NULL == localtime_r(&(v_stats.at(i).st_mtime), &result)) {
