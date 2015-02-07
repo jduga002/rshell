@@ -1,4 +1,6 @@
 #include <sys/types.h>
+#include <pwd.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -49,7 +51,15 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         cout << ((v_stats.at(i).st_mode & S_IWOTH)?"w":"-");
         cout << ((v_stats.at(i).st_mode & S_IXOTH)?"x":"-");
         cout << " " << v_stats.at(i).st_nlink;
-        cout << " " << v_stats.at(i).st_uid;
+        //cout << " " << v_stats.at(i).st_uid;
+        struct passwd *p_uid = getpwuid(v_stats.at(i).st_uid);
+        if (p_uid == NULL) {
+            perror("getpwuid");
+            cout << " ??";
+        }
+        else {
+            cout << " " << p_uid->pw_name;
+        }
         cout << " " << v_stats.at(i).st_gid;
         cout << " " << v_stats.at(i).st_size;
         struct tm result;
