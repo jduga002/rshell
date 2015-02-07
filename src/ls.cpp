@@ -42,6 +42,9 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
     cout << "total " << block_cnt << endl;
 
     for (unsigned i = 0; i < v_stats.size(); i++) {
+        if (S_ISDIR(v_stats.at(i).st_mode)) cout << "d";
+        else if (S_ISLNK(v_stats.at(i).st_mode)) cout << "l";
+        else cout << "-";
         cout << ((v_stats.at(i).st_mode & S_IRUSR)?"r":"-");
         cout << ((v_stats.at(i).st_mode & S_IWUSR)?"w":"-");
         cout << ((v_stats.at(i).st_mode & S_IXUSR)?"x":"-");
