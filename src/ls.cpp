@@ -6,12 +6,18 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <string.h>
 #include <string>
 using namespace std;
 
 int PROGRAM_SUCCESS = 0;
+
+bool dirent_cmp(const dirent * const i, const dirent * const j) {
+    if (strcmp(i->d_name, j->d_name) < 0) return true;
+    return false;
+}
 
 void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
     vector<struct stat> v_stats;
@@ -87,6 +93,14 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
             }
         }
     }
+    if (errno == EBADF) {  // checks if readdir exited loop (returned NULL) because of error
+        perror("readdir failed");
+        PROGRAM_SUCCESS = 1;
+    }
+
+    sort(v_dirents.begin(), v_dirents.end(), dirent_cmp);
+    sort(v_dirs.begin(), v_dirs.end());
+
     if (is_long) {
         ls_long(v_dirents, dir + "/");
     }
@@ -94,10 +108,6 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
         for (unsigned i = 0; i < v_dirents.size(); i++) {
             cout << v_dirents.at(i)->d_name << endl;
         }
-    }
-    if (errno == EBADF) {  // checks if readdir exited loop (returned NULL) because of error
-        perror("readdir failed");
-        PROGRAM_SUCCESS = 1;
     }
 
     if (-1 ==  closedir(dirp)) {
@@ -138,6 +148,8 @@ int main(int argc, char **argv) {
         }
     }
     if (v_dirs.size() >= 2) mult_args = true;
+
+    sort(v_dirs.begin(), v_dirs.end());
     
     for (unsigned i = 0; i < v_dirs.size(); i++) {
         ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive, is_long);
