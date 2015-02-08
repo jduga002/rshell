@@ -112,12 +112,13 @@ void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) 
             }
             else cout << " ????????????";
         }
+        cout << " ";
         if (v_stats.at(i).st_mode & S_IFDIR)
             cout << DIRECTORY;
         if (v_names.at(i).at(0) == '.')
             cout << HIDDEN;
 
-        cout << " " << v_names.at(i) << RESET_COLOR << endl;
+        cout << v_names.at(i) << RESET_COLOR << endl;
         if (S_ISLNK(v_stats.at(i).st_mode)) {
             cout << " <- " << flush;
         }
