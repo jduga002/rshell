@@ -189,10 +189,24 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
 
 int main(int argc, char **argv) {
     vector<string> v_dirs;
+    vector<string> v_files;
     vector<string> v_flags;
     for (int i = 1; i < argc; i++) {
-        if (argv[i][0] != '-') v_dirs.push_back(argv[i]);
-        else v_flags.push_back(argv[i]);
+        if (argv[i][0] == '-') v_flags.push_back(argv[i]);
+        else {
+            struct stat statbuf;
+            if (-1 == stat(argv[i], &statbuf)) {
+                string errorstr = argv[i];
+                errorstr += ": error in stat";
+                perror(errorstr.c_str());
+            }
+            else if (S_ISDIR(statbuf.st_mode)) {
+                v_dirs.push_back(argv[i]);
+            }
+            else {
+                v_files.push_back(argv[i]);
+            }
+        }
     }
     if (v_dirs.empty()) v_dirs.push_back(".");
 
@@ -219,8 +233,18 @@ int main(int argc, char **argv) {
     }
     if (v_dirs.size() >= 2) mult_args = true;
 
+    sort(v_files.begin(), v_files.end());
     sort(v_dirs.begin(), v_dirs.end());
     
+    for (unsigned i = 0; i < v_files.size(); i++) {
+        cout << v_files.at(i) << endl;
+    }
+
+    if (!v_files.empty()) {
+        cout << endl;
+        mult_args = true;
+    }
+
     for (unsigned i = 0; i < v_dirs.size(); i++) {
         ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive, is_long);
     }
