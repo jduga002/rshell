@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
             }
         }
     }
-    if (v_dirs.empty()) v_dirs.push_back(".");
+    if (v_dirs.empty() && v_files.empty()) v_dirs.push_back(".");
 
     bool mult_args = false;
     bool show_all = false;
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
         v_filestats.push_back(statbuf);
     } 
 
-    if (is_long) {
+    if (is_long && !v_files.empty()) {
         ls_long(v_filestats, v_files);
     }
     else {
@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (!v_files.empty()) {
+    if (!v_files.empty() && !v_dirs.empty()) {
         cout << endl;
         mult_args = true;
     }
