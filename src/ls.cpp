@@ -25,17 +25,8 @@ bool dirent_cmp(const dirent * const i, const dirent * const j) {
     return false;
 }
 
-void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
-    vector<struct stat> v_stats;
-    for (unsigned i = 0; i < v_dirents.size(); i++) {
-        struct stat statbuf;
-        if (-1 == stat((dir_loc + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
-            perror("stat");
-            PROGRAM_SUCCESS = 1;
-            return;
-        }
-        v_stats.push_back(statbuf);
-    }
+void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) {
+    
 
     vector<string> v_uids;
     vector<string> v_gids;
@@ -117,7 +108,7 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             }
             else cout << " ????????????";
         }
-        cout << " " << v_dirents.at(i)->d_name << endl;
+        cout << " " << v_names.at(i) << endl;
         if (S_ISLNK(v_stats.at(i).st_mode)) {
             cout << " <- " << flush;
         }
@@ -172,7 +163,19 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
     sort(v_dirs.begin(), v_dirs.end());
 
     if (is_long) {
-        ls_long(v_dirents, dir + "/");
+        vector<struct stat> v_stats;
+        vector<string> v_names;
+        for (unsigned i = 0; i < v_dirents.size(); i++) {
+            struct stat statbuf;
+            if (-1 == stat((dir + "/" + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
+                perror("stat");
+                PROGRAM_SUCCESS = 1;
+                return;
+            }
+            v_stats.push_back(statbuf);
+            v_names.push_back(v_dirents.at(i)->d_name);
+        }
+        ls_long(v_stats, v_names);
     }
     else {
         for (unsigned i = 0; i < v_dirents.size(); i++) {
@@ -236,8 +239,22 @@ int main(int argc, char **argv) {
     sort(v_files.begin(), v_files.end());
     sort(v_dirs.begin(), v_dirs.end());
     
-    for (unsigned i = 0; i < v_files.size(); i++) {
-        cout << v_files.at(i) << endl;
+    if (is_long) {
+        vector<struct stat> v_stats;
+        for (unsigned i = 0; i < v_files.size(); i++) {
+            struct stat statbuf;
+            if (-1 == stat((v_files.at(i)).c_str(), &statbuf)) {
+                perror("stat");
+                return 1;
+            }
+            v_stats.push_back(statbuf);
+        } 
+        ls_long(v_stats, v_files);
+    }
+    else {
+        for (unsigned i = 0; i < v_files.size(); i++) {
+            cout << v_files.at(i) << endl;
+        }
     }
 
     if (!v_files.empty()) {
