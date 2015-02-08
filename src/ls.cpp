@@ -86,10 +86,6 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             max_gid_len = v_gids.at(v_gids.size()-1).length();
         }
     }
-    cout << "Max nlink length: " << max_nlink_len << endl;
-    cout << "Max size length: " << max_size_len << endl;
-    cout << "Max uid length: " << max_uid_len << endl;
-    cout << "Max gid length: " << max_gid_len << endl;
     cout << "total " << block_cnt << endl;
 
     for (unsigned i = 0; i < v_stats.size(); i++) {
