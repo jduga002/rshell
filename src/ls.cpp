@@ -17,6 +17,10 @@
 #include <string>
 using namespace std;
 
+#define DIRECTORY "\033[34;1m"
+#define HIDDEN "\033[40;1m"
+#define RESET_COLOR "\033[m"
+
 int PROGRAM_SUCCESS = 0;
 const char * const FORMAT = "%b %d %R";
 
@@ -108,7 +112,12 @@ void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) 
             }
             else cout << " ????????????";
         }
-        cout << " " << v_names.at(i) << endl;
+        if (v_stats.at(i).st_mode & S_IFDIR)
+            cout << DIRECTORY;
+        if (v_names.at(i).at(0) == '.')
+            cout << HIDDEN;
+
+        cout << " " << v_names.at(i) << RESET_COLOR << endl;
         if (S_ISLNK(v_stats.at(i).st_mode)) {
             cout << " <- " << flush;
         }
@@ -162,24 +171,32 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
     sort(v_dirents.begin(), v_dirents.end(), dirent_cmp);
     sort(v_dirs.begin(), v_dirs.end());
 
+    vector<struct stat> v_stats;
+    for (unsigned i = 0; i < v_dirents.size(); i++) {
+        struct stat statbuf;
+        if (-1 == stat((dir + "/" + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
+            perror("stat");
+            PROGRAM_SUCCESS = 1;
+            return;
+        }
+        v_stats.push_back(statbuf);
+    }
+
     if (is_long) {
-        vector<struct stat> v_stats;
         vector<string> v_names;
         for (unsigned i = 0; i < v_dirents.size(); i++) {
-            struct stat statbuf;
-            if (-1 == stat((dir + "/" + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
-                perror("stat");
-                PROGRAM_SUCCESS = 1;
-                return;
-            }
-            v_stats.push_back(statbuf);
             v_names.push_back(v_dirents.at(i)->d_name);
         }
         ls_long(v_stats, v_names);
     }
     else {
         for (unsigned i = 0; i < v_dirents.size(); i++) {
-            cout << v_dirents.at(i)->d_name << endl;
+            //if (S_ISDIR(v_stats.at(i).st_mode))
+            if (v_stats.at(i).st_mode & S_IFDIR)
+                cout << DIRECTORY;
+            if (v_dirents.at(i)->d_name[0] == '.')
+                cout << HIDDEN;
+            cout << v_dirents.at(i)->d_name << RESET_COLOR << endl;
         }
     }
 
@@ -239,20 +256,22 @@ int main(int argc, char **argv) {
     sort(v_files.begin(), v_files.end());
     sort(v_dirs.begin(), v_dirs.end());
     
+    vector<struct stat> v_filestats;
+    for (unsigned i = 0; i < v_files.size(); i++) {
+        struct stat statbuf;
+        if (-1 == stat((v_files.at(i)).c_str(), &statbuf)) {
+            perror("stat");
+            return 1;
+        }
+        v_filestats.push_back(statbuf);
+    } 
+
     if (is_long) {
-        vector<struct stat> v_stats;
-        for (unsigned i = 0; i < v_files.size(); i++) {
-            struct stat statbuf;
-            if (-1 == stat((v_files.at(i)).c_str(), &statbuf)) {
-                perror("stat");
-                return 1;
-            }
-            v_stats.push_back(statbuf);
-        } 
-        ls_long(v_stats, v_files);
+        ls_long(v_filestats, v_files);
     }
     else {
         for (unsigned i = 0; i < v_files.size(); i++) {
+            //don't need to check if directory because all these are files
             cout << v_files.at(i) << endl;
         }
     }
