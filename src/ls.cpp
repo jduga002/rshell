@@ -24,9 +24,15 @@ using namespace std;
 int PROGRAM_SUCCESS = 0;
 const char * const FORMAT = "%b %d %R";
 
+bool string_cmp(string s, string t) {
+    for (unsigned k = 0; k < s.length(); k ++) s.at(k) = toupper(s.at(k));
+    for (unsigned k = 0; k < t.length(); k ++) t.at(k) = toupper(t.at(k));
+    return (s < t);
+}
+
 bool dirent_cmp(const dirent * const i, const dirent * const j) {
-    if (strcmp(i->d_name, j->d_name) < 0) return true;
-    return false;
+    string s = i->d_name; string t = j->d_name;
+    return string_cmp(s,t);
 }
 
 void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) {
@@ -170,7 +176,7 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
     }
 
     sort(v_dirents.begin(), v_dirents.end(), dirent_cmp);
-    sort(v_dirs.begin(), v_dirs.end());
+    sort(v_dirs.begin(), v_dirs.end(), string_cmp);
 
     vector<struct stat> v_stats;
     for (unsigned i = 0; i < v_dirents.size(); i++) {
@@ -254,8 +260,8 @@ int main(int argc, char **argv) {
     }
     if (v_dirs.size() >= 2) mult_args = true;
 
-    sort(v_files.begin(), v_files.end());
-    sort(v_dirs.begin(), v_dirs.end());
+    sort(v_files.begin(), v_files.end(), string_cmp);
+    sort(v_dirs.begin(), v_dirs.end(), string_cmp);
     
     vector<struct stat> v_filestats;
     for (unsigned i = 0; i < v_files.size(); i++) {
