@@ -55,9 +55,9 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             max_nlink_len = s.length();
         }
 
-        ostringstream tin;
-        tin << v_stats.at(i).st_size;
-        s = tin.str();
+        sin.str("");
+        sin << v_stats.at(i).st_size;
+        s = sin.str();
         if (s.length() > max_size_len) {
             max_size_len = s.length();
         }
