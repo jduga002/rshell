@@ -37,8 +37,12 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         v_stats.push_back(statbuf);
     }
 
+    vector<string> v_uids;
+    vector<string> v_gids;
     unsigned max_nlink_len = 0;
     unsigned max_size_len = 0;
+    unsigned max_uid_len = 0;
+    unsigned max_gid_len = 0;
     unsigned block_cnt = 0;
     for (unsigned i = 0; i < v_stats.size(); i++) {
         //cout << v_dirents.at(i)->d_name << ": " << v_stats.at(i).st_blocks << endl;
@@ -51,13 +55,41 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             max_nlink_len = s.length();
         }
 
-        sin << v_stats.at(i).st_size;
-        s = sin.str();
+        ostringstream tin;
+        tin << v_stats.at(i).st_size;
+        s = tin.str();
         if (s.length() > max_size_len) {
             max_size_len = s.length();
         }
 
+        struct passwd *p_uid = getpwuid(v_stats.at(i).st_uid);
+        if (p_uid == NULL) {
+            perror("getpwuid");
+            v_uids.push_back(" ??");
+        }
+        else {
+            v_uids.push_back(p_uid->pw_name);
+        }
+        if (v_uids.at(v_uids.size()-1).length() > max_uid_len) {
+            max_uid_len = v_uids.at(v_uids.size()-1).length();
+        }
+
+        struct group * g_gid = getgrgid(v_stats.at(i).st_gid);
+        if (g_gid == NULL) {
+            perror("getgrgid");
+            v_gids.push_back(" ??");
+        }
+        else {
+            v_gids.push_back(g_gid->gr_name);
+        }
+        if (v_gids.at(v_gids.size()-1).length() > max_gid_len) {
+            max_gid_len = v_gids.at(v_gids.size()-1).length();
+        }
     }
+    cout << "Max nlink length: " << max_nlink_len << endl;
+    cout << "Max size length: " << max_size_len << endl;
+    cout << "Max uid length: " << max_uid_len << endl;
+    cout << "Max gid length: " << max_gid_len << endl;
     cout << "total " << block_cnt << endl;
 
     for (unsigned i = 0; i < v_stats.size(); i++) {
@@ -75,23 +107,8 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         cout << ((v_stats.at(i).st_mode & S_IXOTH)?"x":"-");
         cout << setw(max_nlink_len + 1) << v_stats.at(i).st_nlink;
         //cout << " " << v_stats.at(i).st_uid;
-        struct passwd *p_uid = getpwuid(v_stats.at(i).st_uid);
-        if (p_uid == NULL) {
-            perror("getpwuid");
-            cout << " ??";
-        }
-        else {
-            cout << " " << p_uid->pw_name;
-        }
-        //cout << " " << v_stats.at(i).st_gid;
-        struct group * g_gid = getgrgid(v_stats.at(i).st_gid);
-        if (g_gid == NULL) {
-            perror("getgrgid");
-            cout << " ??";
-        }
-        else {
-            cout << " " << g_gid->gr_name;
-        }
+        cout << setw(max_uid_len+1) << v_uids.at(i);
+        cout << setw(max_gid_len+1) << v_gids.at(i);
         cout << setw(max_size_len + 1) << v_stats.at(i).st_size;
         struct tm result;
         if (NULL == localtime_r(&(v_stats.at(i).st_mtime), &result)) {
