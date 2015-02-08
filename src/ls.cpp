@@ -102,7 +102,6 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         cout << ((v_stats.at(i).st_mode & S_IWOTH)?"w":"-");
         cout << ((v_stats.at(i).st_mode & S_IXOTH)?"x":"-");
         cout << setw(max_nlink_len + 1) << v_stats.at(i).st_nlink;
-        //cout << " " << v_stats.at(i).st_uid;
         cout << setw(max_uid_len+1) << v_uids.at(i);
         cout << setw(max_gid_len+1) << v_gids.at(i);
         cout << setw(max_size_len + 1) << v_stats.at(i).st_size;
@@ -118,8 +117,10 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             }
             else cout << " ????????????";
         }
-        //cout << " " << v_stats.at(i).st_mtime;
         cout << " " << v_dirents.at(i)->d_name << endl;
+        if (S_ISLNK(v_stats.at(i).st_mode)) {
+            cout << " <- " << flush;
+        }
     }
 }
 
