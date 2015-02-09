@@ -9,37 +9,86 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <string.h>
 #include <string>
 using namespace std;
 
+#define DIRECTORY "\033[34;1m"
+#define EXECUTABLE "\033[32;1m"
+#define HIDDEN "\033[40;1m"
+#define RESET_COLOR "\033[m"
+
 int PROGRAM_SUCCESS = 0;
 const char * const FORMAT = "%b %d %R";
 
-bool dirent_cmp(const dirent * const i, const dirent * const j) {
-    if (strcmp(i->d_name, j->d_name) < 0) return true;
-    return false;
+bool string_cmp(string s, string t) {
+    for (unsigned k = 0; k < s.length(); k ++) s.at(k) = toupper(s.at(k));
+    for (unsigned k = 0; k < t.length(); k ++) t.at(k) = toupper(t.at(k));
+    return (s < t);
 }
 
-void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
-    vector<struct stat> v_stats;
-    for (unsigned i = 0; i < v_dirents.size(); i++) {
-        struct stat statbuf;
-        if (-1 == stat((dir_loc + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
-            perror("stat");
-            PROGRAM_SUCCESS = 1;
-            return;
-        }
-        v_stats.push_back(statbuf);
-    }
+bool dirent_cmp(const dirent * const i, const dirent * const j) {
+    string s = i->d_name; string t = j->d_name;
+    return string_cmp(s,t);
+}
+
+void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) {
+    
+
+    vector<string> v_uids;
+    vector<string> v_gids;
+    unsigned max_nlink_len = 0;
+    unsigned max_size_len = 0;
+    unsigned max_uid_len = 0;
+    unsigned max_gid_len = 0;
     unsigned block_cnt = 0;
     for (unsigned i = 0; i < v_stats.size(); i++) {
         //cout << v_dirents.at(i)->d_name << ": " << v_stats.at(i).st_blocks << endl;
         block_cnt += v_stats.at(i).st_blocks;
+
+        ostringstream sin;
+        sin << v_stats.at(i).st_nlink;
+        string s = sin.str();
+        if (s.length() > max_nlink_len) {
+            max_nlink_len = s.length();
+        }
+
+        sin.str("");
+        sin << v_stats.at(i).st_size;
+        s = sin.str();
+        if (s.length() > max_size_len) {
+            max_size_len = s.length();
+        }
+
+        struct passwd *p_uid = getpwuid(v_stats.at(i).st_uid);
+        if (p_uid == NULL) {
+            perror("getpwuid");
+            v_uids.push_back(" ??");
+        }
+        else {
+            v_uids.push_back(p_uid->pw_name);
+        }
+        if (v_uids.at(v_uids.size()-1).length() > max_uid_len) {
+            max_uid_len = v_uids.at(v_uids.size()-1).length();
+        }
+
+        struct group * g_gid = getgrgid(v_stats.at(i).st_gid);
+        if (g_gid == NULL) {
+            perror("getgrgid");
+            v_gids.push_back(" ??");
+        }
+        else {
+            v_gids.push_back(g_gid->gr_name);
+        }
+        if (v_gids.at(v_gids.size()-1).length() > max_gid_len) {
+            max_gid_len = v_gids.at(v_gids.size()-1).length();
+        }
     }
-    cout << "total " << block_cnt << endl;
+    //cout << "total " << block_cnt << endl;
 
     for (unsigned i = 0; i < v_stats.size(); i++) {
         if (S_ISDIR(v_stats.at(i).st_mode)) cout << "d";
@@ -54,26 +103,10 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
         cout << ((v_stats.at(i).st_mode & S_IROTH)?"r":"-");
         cout << ((v_stats.at(i).st_mode & S_IWOTH)?"w":"-");
         cout << ((v_stats.at(i).st_mode & S_IXOTH)?"x":"-");
-        cout << " " << v_stats.at(i).st_nlink;
-        //cout << " " << v_stats.at(i).st_uid;
-        struct passwd *p_uid = getpwuid(v_stats.at(i).st_uid);
-        if (p_uid == NULL) {
-            perror("getpwuid");
-            cout << " ??";
-        }
-        else {
-            cout << " " << p_uid->pw_name;
-        }
-        //cout << " " << v_stats.at(i).st_gid;
-        struct group * g_gid = getgrgid(v_stats.at(i).st_gid);
-        if (g_gid == NULL) {
-            perror("getgrgid");
-            cout << " ??";
-        }
-        else {
-            cout << " " << g_gid->gr_name;
-        }
-        cout << " " << v_stats.at(i).st_size;
+        cout << setw(max_nlink_len + 1) << v_stats.at(i).st_nlink;
+        cout << setw(max_uid_len+1) << v_uids.at(i);
+        cout << setw(max_gid_len+1) << v_gids.at(i);
+        cout << setw(max_size_len + 1) << v_stats.at(i).st_size;
         struct tm result;
         if (NULL == localtime_r(&(v_stats.at(i).st_mtime), &result)) {
             perror("localtime_r");
@@ -86,8 +119,18 @@ void ls_long(const vector<dirent *> &v_dirents, string dir_loc) {
             }
             else cout << " ????????????";
         }
-        //cout << " " << v_stats.at(i).st_mtime;
-        cout << " " << v_dirents.at(i)->d_name << endl;
+        cout << " ";
+        if (v_stats.at(i).st_mode & S_IFDIR)
+            cout << DIRECTORY;
+        else if (v_stats.at(i).st_mode & S_IXUSR)
+            cout << EXECUTABLE;
+        if (v_names.at(i).at(0) == '.')
+            cout << HIDDEN;
+
+        cout << v_names.at(i) << RESET_COLOR << endl;
+        if (S_ISLNK(v_stats.at(i).st_mode)) {
+            cout << " <- " << flush;
+        }
     }
 }
 
@@ -136,14 +179,36 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
     }
 
     sort(v_dirents.begin(), v_dirents.end(), dirent_cmp);
-    sort(v_dirs.begin(), v_dirs.end());
+    sort(v_dirs.begin(), v_dirs.end(), string_cmp);
+
+    vector<struct stat> v_stats;
+    for (unsigned i = 0; i < v_dirents.size(); i++) {
+        struct stat statbuf;
+        if (-1 == stat((dir + "/" + v_dirents.at(i)->d_name).c_str(), &statbuf)) {
+            perror("stat");
+            PROGRAM_SUCCESS = 1;
+            return;
+        }
+        v_stats.push_back(statbuf);
+    }
 
     if (is_long) {
-        ls_long(v_dirents, dir + "/");
+        vector<string> v_names;
+        for (unsigned i = 0; i < v_dirents.size(); i++) {
+            v_names.push_back(v_dirents.at(i)->d_name);
+        }
+        ls_long(v_stats, v_names);
     }
     else {
         for (unsigned i = 0; i < v_dirents.size(); i++) {
-            cout << v_dirents.at(i)->d_name << endl;
+            //if (S_ISDIR(v_stats.at(i).st_mode))
+            if (v_stats.at(i).st_mode & S_IFDIR)
+                cout << DIRECTORY;
+            else if (v_stats.at(i).st_mode & S_IXUSR)
+                cout << EXECUTABLE;
+            if (v_dirents.at(i)->d_name[0] == '.')
+                cout << HIDDEN;
+            cout << v_dirents.at(i)->d_name << RESET_COLOR << endl;
         }
     }
 
@@ -156,12 +221,26 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
 
 int main(int argc, char **argv) {
     vector<string> v_dirs;
+    vector<string> v_files;
     vector<string> v_flags;
     for (int i = 1; i < argc; i++) {
-        if (argv[i][0] != '-') v_dirs.push_back(argv[i]);
-        else v_flags.push_back(argv[i]);
+        if (argv[i][0] == '-') v_flags.push_back(argv[i]);
+        else {
+            struct stat statbuf;
+            if (-1 == stat(argv[i], &statbuf)) {
+                string errorstr = argv[i];
+                errorstr += ": error in stat";
+                perror(errorstr.c_str());
+            }
+            else if (S_ISDIR(statbuf.st_mode)) {
+                v_dirs.push_back(argv[i]);
+            }
+            else {
+                v_files.push_back(argv[i]);
+            }
+        }
     }
-    if (v_dirs.empty()) v_dirs.push_back(".");
+    if (v_dirs.empty() && v_files.empty()) v_dirs.push_back(".");
 
     bool mult_args = false;
     bool show_all = false;
@@ -186,15 +265,38 @@ int main(int argc, char **argv) {
     }
     if (v_dirs.size() >= 2) mult_args = true;
 
-    sort(v_dirs.begin(), v_dirs.end());
+    sort(v_files.begin(), v_files.end(), string_cmp);
+    sort(v_dirs.begin(), v_dirs.end(), string_cmp);
     
+    vector<struct stat> v_filestats;
+    for (unsigned i = 0; i < v_files.size(); i++) {
+        struct stat statbuf;
+        if (-1 == stat((v_files.at(i)).c_str(), &statbuf)) {
+            perror("stat");
+            return 1;
+        }
+        v_filestats.push_back(statbuf);
+    } 
+
+    if (is_long && !v_files.empty()) {
+        ls_long(v_filestats, v_files);
+    }
+    else {
+        for (unsigned i = 0; i < v_files.size(); i++) {
+            //don't need to check if directory because all these are files
+            if (v_filestats.at(i).st_mode & S_IXUSR) cout << EXECUTABLE;
+            if (v_files.at(i).at(0) == '.') cout << HIDDEN;
+            cout << v_files.at(i) << RESET_COLOR << endl;
+        }
+    }
+
+    if (!v_files.empty() && !v_dirs.empty()) {
+        cout << endl;
+        mult_args = true;
+    }
+
     for (unsigned i = 0; i < v_dirs.size(); i++) {
         ls(v_dirs.at(i), mult_args, show_all, not_first, is_recursive, is_long);
     }
-    /*string h = "hey";
-    string i = "ick";
-    bool isLess = h < i;
-    cout << isLess << endl;
-    cout << true << endl;*/
     return PROGRAM_SUCCESS;
 }
