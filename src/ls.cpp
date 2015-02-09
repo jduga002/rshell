@@ -87,7 +87,7 @@ void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) 
             max_gid_len = v_gids.at(v_gids.size()-1).length();
         }
     }
-    cout << "total " << block_cnt << endl;
+    //cout << "total " << block_cnt << endl;
 
     for (unsigned i = 0; i < v_stats.size(); i++) {
         if (S_ISDIR(v_stats.at(i).st_mode)) cout << "d";
