@@ -45,7 +45,7 @@ By passing in files and directories as arguments to `ls`, you can also get the c
 
 3. `-l` will show the [long listing](http://forum.linuxcareer.com/threads/1659-ls-command-with-a-long-listing-format-output) format of the files in a directory.
 
-The `ls` program lastly will output directories in blue text, and hidden files with a gray background.
+The `ls` program lastly will output directories in blue text, executables in green text, and hidden files with a gray background.
 
 ### Installing and Running rshell and ls
 

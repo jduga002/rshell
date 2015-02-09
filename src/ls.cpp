@@ -285,6 +285,7 @@ int main(int argc, char **argv) {
         for (unsigned i = 0; i < v_files.size(); i++) {
             //don't need to check if directory because all these are files
             if (v_filestats.at(i).st_mode & S_IXUSR) cout << EXECUTABLE;
+            if (v_files.at(i).at(0) == '.') cout << HIDDEN;
             cout << v_files.at(i) << RESET_COLOR << endl;
         }
     }
