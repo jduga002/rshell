@@ -18,6 +18,7 @@
 using namespace std;
 
 #define DIRECTORY "\033[34;1m"
+#define EXECUTABLE "\033[32;1m"
 #define HIDDEN "\033[40;1m"
 #define RESET_COLOR "\033[m"
 
@@ -121,6 +122,8 @@ void ls_long(const vector<struct stat> &v_stats, const vector<string> &v_names) 
         cout << " ";
         if (v_stats.at(i).st_mode & S_IFDIR)
             cout << DIRECTORY;
+        else if (v_stats.at(i).st_mode & S_IXUSR)
+            cout << EXECUTABLE;
         if (v_names.at(i).at(0) == '.')
             cout << HIDDEN;
 
@@ -201,6 +204,8 @@ void ls(string dir, bool &mult_args, bool &show_all, bool &not_first, bool &is_r
             //if (S_ISDIR(v_stats.at(i).st_mode))
             if (v_stats.at(i).st_mode & S_IFDIR)
                 cout << DIRECTORY;
+            else if (v_stats.at(i).st_mode & S_IXUSR)
+                cout << EXECUTABLE;
             if (v_dirents.at(i)->d_name[0] == '.')
                 cout << HIDDEN;
             cout << v_dirents.at(i)->d_name << RESET_COLOR << endl;
@@ -279,7 +284,8 @@ int main(int argc, char **argv) {
     else {
         for (unsigned i = 0; i < v_files.size(); i++) {
             //don't need to check if directory because all these are files
-            cout << v_files.at(i) << endl;
+            if (v_filestats.at(i).st_mode & S_IXUSR) cout << EXECUTABLE;
+            cout << v_files.at(i) << RESET_COLOR << endl;
         }
     }
 
