@@ -84,6 +84,7 @@ Other bugs in rshell:
 The number shown is incorrect. Files get counted double the normal block count, and symbolic links add a number to the total block count, when their individual block count should be zero.
 
 2. This program cannot correctly identify symbolic links for the long listing format.
+It also displays the info for the file it is linked to, rather than itself.
 
 If you find any bugs in this project, create an issue on GitHub, or, if you want, fix it yourself and issue a pull request.
 
