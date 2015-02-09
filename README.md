@@ -45,6 +45,8 @@ By passing in files and directories as arguments to `ls`, you can also get the c
 
 3. `-l` will show the [long listing](http://forum.linuxcareer.com/threads/1659-ls-command-with-a-long-listing-format-output) format of the files in a directory.
 
+The `ls` program lastly will output directories in blue text, and hidden files with a gray background.
+
 ### Installing and Running rshell and ls
 
 After cloning and downloading this repository, `cd` into it and type `make` in the command prompt. This will then make `rshell` and `ls`  for you (requires the `g++` compiler to be installed on your system).
@@ -85,6 +87,8 @@ The number shown is incorrect. Files get counted double the normal block count, 
 
 2. This program cannot correctly identify symbolic links for the long listing format.
 It also displays the info for the file it is linked to, rather than itself.
+
+3. If passed in a single bad file, `ls` defaults to printing files in current directory rather than just quitting.
 
 If you find any bugs in this project, create an issue on GitHub, or, if you want, fix it yourself and issue a pull request.
 
