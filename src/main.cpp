@@ -8,6 +8,8 @@
 #include <stdio.h>
 using namespace std;
 
+#define CONN_IOPIP_ERROR "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together"
+
 const int MAX_LINE_LENGTH = 2048;
 const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
@@ -164,6 +166,25 @@ bool isError(char* line) {
     return false;
 }
 
+void conn_iopip(const char * const line, bool &has_conn, bool &has_iopip) {
+    for (int i = 0; line[i] != '\0'; i++) {
+        if (line[i] == '&' || line[i] == ';') {
+            has_conn = true;
+        }
+        else if (line[i] == '<' || line[i] == '>') {
+            has_iopip = true;
+        }
+        else if (line[i] == '|') {
+            if (line[i+1] == '|') { 
+                has_conn = true;
+                i++;
+            }
+            else has_iopip = true;
+        }
+        if (has_conn && has_iopip) break;
+    }
+}
+
 int main() {
 
     char line[MAX_LINE_LENGTH]; 
@@ -178,24 +199,29 @@ int main() {
     while (strcmp(line, "exit") != 0) {
         if (strlen(line) == 0) { /* do nothing */ }
         else if (line[0] != '#') {
-            strcpy(line, strtok(line, "#"));
-            if (allSpaces(line)) { /* do nothing */ }
-            else if (!isError(line)) {
-                vector<char *> v_commands;
-                char *string_token = strtok(line, ";");
+            bool has_conn = false, has_iopip = false;
+            conn_iopip(line, has_conn, has_iopip);
+            if (has_conn && has_iopip) cout << CONN_IOPIP_ERROR << endl;
+            else if (has_iopip) { }
+            else {
+                strcpy(line, strtok(line, "#"));
+                if (allSpaces(line)) { /* do nothing */ }
+                else if (!isError(line)) {
+                    vector<char *> v_commands;
+                    char *string_token = strtok(line, ";");
 
-                while (string_token != NULL) {
-                    v_commands.push_back(string_token);
-                    string_token = strtok(NULL, ";");
+                    while (string_token != NULL) {
+                        v_commands.push_back(string_token);
+                        string_token = strtok(NULL, ";");
+                    }
+
+                    for (unsigned i = 0; i < v_commands.size(); i++) {
+                        //run the command between each semicolon
+                        parse_commands(v_commands.at(i));
+                    }
                 }
-
-                for (unsigned i = 0; i < v_commands.size(); i++) {
-                    //run the command between each semicolon
-                    parse_commands(v_commands.at(i));
-                }
-            }
-
             else cerr << ERROR << endl;
+            }
         }
 
         cout << "$ " << flush;
