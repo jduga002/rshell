@@ -199,12 +199,12 @@ int main() {
     while (strcmp(line, "exit") != 0) {
         if (strlen(line) == 0) { /* do nothing */ }
         else if (line[0] != '#') {
+            strcpy(line, strtok(line, "#"));
             bool has_conn = false, has_iopip = false;
             conn_iopip(line, has_conn, has_iopip);
             if (has_conn && has_iopip) cout << CONN_IOPIP_ERROR << endl;
             else if (has_iopip) { }
             else {
-                strcpy(line, strtok(line, "#"));
                 if (allSpaces(line)) { /* do nothing */ }
                 else if (!isError(line)) {
                     vector<char *> v_commands;
