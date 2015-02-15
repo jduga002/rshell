@@ -16,7 +16,7 @@ const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rsh
 void getUsername(char *username) {
     if (NULL == (username = getlogin())) {
         perror("getlogin() error");
-        username = "???";
+        strcpy(username,"???");
     }
 }
 
@@ -167,7 +167,6 @@ bool isError(char* line) {
 int main() {
 
     char line[MAX_LINE_LENGTH]; 
-    get
     cerr << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
     line[MAX_LINE_LENGTH-1] = '\0';
