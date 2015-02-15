@@ -13,13 +13,11 @@ const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'"
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
 
 // error in function; will go unused
-char * getUsername() {
-    char *username;
-    username = getlogin();
-    if (username == NULL) {
+void getUsername(char *username) {
+    if (NULL == (username = getlogin())) {
         perror("getlogin() error");
+        username = "???";
     }
-    return username;
 }
 
 // probably error in this function, so will go unused
@@ -169,6 +167,7 @@ bool isError(char* line) {
 int main() {
 
     char line[MAX_LINE_LENGTH]; 
+    get
     cerr << "$ ";
     cin.getline(line, MAX_LINE_LENGTH);
     line[MAX_LINE_LENGTH-1] = '\0';
