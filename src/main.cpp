@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <stdio.h>
 using namespace std;
@@ -58,6 +59,10 @@ int exec_command(vector<char *> command) {
     return x;
 }
 
+int exec_commands_iopip(vector<char *> v_commands) {
+    return 0;
+}
+
 vector<char *> words(char* command) {
     vector<char *> v;
     char *str_token = strtok(command, " \t");
@@ -69,11 +74,17 @@ vector<char *> words(char* command) {
     return v;
 }
 
-void exec_commands_iopip(const vector<char *> &v_commands) {
+void parse_commands_iopip(const vector<char *> &v_commands) {
+    vector<vector<char *> > v_wordscmds;
     for (unsigned i = 0; i < v_commands.size(); i++) {
-        vector<char *> command = words(v_commands.at(i));
-        exec_command(command);
+        v_wordscmds.push_back(words(v_commands.at(i)));
     }
+    vector<int *> v_fds;
+    int fd[2];
+    for (unsigned i = 0; i < v_commands.size(); i++) {
+        v_fds.push_back(fd);
+    }
+    //exec_commands_iopip(command);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
@@ -202,7 +213,7 @@ int main() {
                     v_commands.push_back(string_token);
                     string_token = strtok(NULL, "|");
                 }
-                exec_commands_iopip(v_commands);
+                parse_commands_iopip(v_commands);
             }
             else {
                 if (allSpaces(line)) { /* do nothing */ }
