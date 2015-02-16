@@ -29,8 +29,8 @@ void getHost(char *hostName) {
     }
 }
 
-int exec_command(char **command, int num_words) { 
-    if (strcmp(command[0],"exit") == 0 && num_words == 1)
+int exec_command(vector<char *> command) { 
+    if (strcmp(command[0],"exit") == 0 && command.size() == 1)
         exit(0);
     
     int x = 1;
@@ -42,7 +42,8 @@ int exec_command(char **command, int num_words) {
     }
     else if (pid == 0) { // child process
         //execute command
-        if (-1 == execvp(command[0], command)) {
+        char **command_arr = &command[0];
+        if (-1 == execvp(command_arr[0], command_arr)) {
             perror("execvp");
             exit(1);
         }
@@ -57,26 +58,22 @@ int exec_command(char **command, int num_words) {
     return x;
 }
 
-char **words(char* command, int &size) {
+vector<char *> words(char* command) {
     vector<char *> v;
     char *str_token = strtok(command, " \t");
     while (str_token != NULL) {
         v.push_back(str_token);
         str_token = strtok(NULL, " \t");
     }
-    size = v.size();
-    unsigned max_char_size = 0;
-    for (unsigned i = 0; i < v.size(); i++) {
-        if (strlen(v.at(i)) > max_char_size)
-            max_char_size = strlen(v.at(i));
+    v.push_back(NULL);
+    return v;
+}
+
+void exec_commands_iopip(const vector<char *> &v_commands) {
+    for (unsigned i = 0; i < v_commands.size(); i++) {
+        vector<char *> command = words(v_commands.at(i));
+        exec_command(command);
     }
-    char **args = (char **)malloc(sizeof(char *) * size + 1);
-    for (int i = 0; i < size; i++) {
-        args[i] = (char*)malloc(sizeof(char) * max_char_size);
-        strcpy(args[i],v.at(i));
-    }
-    args[size] = NULL;
-    return args;
 }
 
 void exec_commands(const vector<char *> &v_commands) {
@@ -84,13 +81,8 @@ void exec_commands(const vector<char *> &v_commands) {
     char connector[] = "&&";
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
         if ( (x == 0 && strcmp(connector,"&&") == 0) || (x != 0 && strcmp(connector,"||") == 0) ) {
-            int size = 0;
-            char **command = words(v_commands.at(i), size);
-            x = exec_command(command, size);
-            for (int j = 0; j < size; j++) {
-                free(command[j]);
-            }
-            free(command);
+            vector<char *> command = words(v_commands.at(i));
+            x = exec_command(command);
         }
         if ( i < v_commands.size() - 1 ) {
             strcpy(connector, v_commands.at(i+1));
@@ -203,7 +195,15 @@ int main() {
             bool has_conn = false, has_iopip = false;
             conn_iopip(line, has_conn, has_iopip);
             if (has_conn && has_iopip) cout << CONN_IOPIP_ERROR << endl;
-            else if (has_iopip) { }
+            else if (has_iopip) {
+                vector<char *> v_commands;
+                char *string_token = strtok(line, "|");
+                while (string_token != NULL) {
+                    v_commands.push_back(string_token);
+                    string_token = strtok(NULL, "|");
+                }
+                exec_commands_iopip(v_commands);
+            }
             else {
                 if (allSpaces(line)) { /* do nothing */ }
                 else if (!isError(line)) {
