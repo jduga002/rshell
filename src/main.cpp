@@ -9,11 +9,13 @@
 #include <stdio.h>
 using namespace std;
 
-#define CONN_IOPIP_ERROR "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together"
-
 const int MAX_LINE_LENGTH = 2048;
 const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
+const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together";
+
+const int P_READ = 0;
+const int P_WRITE = 1;
 
 // error in function; will go unused
 void getUsername(char *username) {
@@ -59,7 +61,45 @@ int exec_command(vector<char *> command) {
     return x;
 }
 
-int exec_commands_iopip(vector<char *> v_commands) {
+int exec_commands_iopip(vector<vector<char *> > &v_commands, 
+                        const vector<int *> &v_fds, const vector<int> &v_pids, int ind) {
+    int fd[2];
+    int savedstdin;
+    if (ind != 0) {
+        if (-1 == (savedstdin = dup(0))) {
+            perror("error with dup");
+            return 1;
+        }
+    }
+    if (-1 == pipe(fd)) {
+        perror("Error with pipe");
+        return 1;
+    }
+    int pid = fork();
+    if (pid == -1) {
+        perror("error with fork");
+        return 1;
+    }
+    else if (pid == 0) { //child process
+        if (-1 == dup2(fd[P_WRITE],1)) {
+            perror("Error with dup2");
+            exit(1);
+        }
+        if (-1 == close(fd[P_READ])) {
+            perror("Error with close");
+            exit(1);
+        }
+        char **command_arr = &v_commands.at(ind)[0];
+        if (-1 == execvp(command_arr[0], command_arr)) {
+            perror("execvp");
+            exit(1);
+        }
+        exit(0);
+    }
+    else { //parent process
+        
+
+    }
     return 0;
 }
 
@@ -81,10 +121,15 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
     }
     vector<int *> v_fds;
     int fd[2];
-    for (unsigned i = 0; i < v_commands.size(); i++) {
+    for (unsigned i = 0; i < v_commands.size()-1; i++) {
         v_fds.push_back(fd);
     }
-    //exec_commands_iopip(command);
+   vector<int> v_pids(v_fds.size());
+    for (unsigned i = 0; i < v_fds.size(); i++) {
+        
+    }
+    int ind = 0;
+    exec_commands_iopip(v_wordscmds, v_fds, v_pids, ind);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
