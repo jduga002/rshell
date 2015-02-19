@@ -63,41 +63,64 @@ int exec_command(vector<char *> command) {
 
 int exec_commands_iopip(vector<vector<char *> > &v_commands, 
                         const vector<int *> &v_fds, const vector<int> &v_pids, int ind) {
-    int fd[2];
+    /*int fd[2];
     int savedstdin;
     if (ind != 0) {
         if (-1 == (savedstdin = dup(0))) {
             perror("error with dup");
             return 1;
         }
+    }*/
+    for (unsigned i = 0; i < v_commands.size(); i++) {
+        if (-1 == pipe(v_fds.at(i))) {
+            perror("Error with pipe");
+            return 1;
+        }
+        int pid = fork();
+        if (pid == -1) {
+            perror("error with fork");
+            return 1;
+        }
+        else if (pid == 0) { //child process
+            if (i != v_commands.size()-1) {
+                if (-1 == dup2(v_fds.at(i)[P_WRITE],1)) {
+                    perror("Error with dup2");
+                    exit(1);
+                }
+            }
+            if (i != 0) {
+                if (-1 == dup2(v_fds.at(i-1)[P_READ],0)) {
+                    perror("Error with close");
+                    exit(1);
+                }
+            }
+            char **command_arr = &v_commands.at(ind)[0];
+            if (-1 == execvp(command_arr[0], command_arr)) {
+                perror("execvp");
+                exit(1);
+            }
+            exit(0);
+        }
+        else { //parent process
+            //continue loop
+        }
     }
-    if (-1 == pipe(fd)) {
-        perror("Error with pipe");
-        return 1;
-    }
-    int pid = fork();
-    if (pid == -1) {
-        perror("error with fork");
-        return 1;
-    }
-    else if (pid == 0) { //child process
-        if (-1 == dup2(fd[P_WRITE],1)) {
-            perror("Error with dup2");
+    for (unsigned i = 0; i < v_commands.size(); i++) {
+        int x;
+        if (-1 == wait(&x)) { // parent function waits for child
+            perror("wait");  // program exits if there is an error
             exit(1);
         }
-        if (-1 == close(fd[P_READ])) {
-            perror("Error with close");
-            exit(1);
-        }
-        char **command_arr = &v_commands.at(ind)[0];
-        if (-1 == execvp(command_arr[0], command_arr)) {
-            perror("execvp");
-            exit(1);
-        }
-        exit(0);
     }
-    else { //parent process
-        
+    for (unsigned i = 0; i < v_fds.size(); i++) {
+        if (-1 == close(v_fds.at(i)[P_READ])) {
+            perror("close");
+            exit(1);
+        }
+        if (-1 == close(v_fds.at(i)[P_WRITE])) {
+            perror("close");
+            exit(1);
+        }
 
     }
     return 0;
