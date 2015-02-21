@@ -61,23 +61,17 @@ int exec_command(vector<char *> command) {
     return x;
 }
 
-int exec_commands_iopip(vector<vector<char *> > &v_commands, 
-                        const vector<int *> &v_fds, const vector<int> &v_pids, int ind) {
-    /*int fd[2];
-    int savedstdin;
-    if (ind != 0) {
-        if (-1 == (savedstdin = dup(0))) {
-            perror("error with dup");
-            return 1;
-        }
-    }*/
+int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *> &v_fds) {
+    vector<int> v_pids;
     for (unsigned i = 0; i < v_commands.size(); i++) {
-        if (-1 == pipe(v_fds.at(i))) {
-            perror("Error with pipe");
-            return 1;
+        if (i != v_commands.size()-1) {
+            if (-1 == pipe(v_fds.at(i))) {
+                perror("Error with pipe");
+                return 1;
+            }
         }
         int pid = fork();
-        if (pid == -1) {
+        if (pid == -1) { //error with fork
             perror("error with fork");
             return 1;
         }
@@ -94,7 +88,7 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands,
                     exit(1);
                 }
             }
-            char **command_arr = &v_commands.at(ind)[0];
+            char **command_arr = &v_commands.at(i)[0];
             if (-1 == execvp(command_arr[0], command_arr)) {
                 perror("execvp");
                 exit(1);
@@ -102,6 +96,7 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands,
             exit(0);
         }
         else { //parent process
+            v_pids.push_back(pid);
             //continue loop
         }
     }
@@ -111,17 +106,16 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands,
             perror("wait");  // program exits if there is an error
             exit(1);
         }
-    }
-    for (unsigned i = 0; i < v_fds.size(); i++) {
-        if (-1 == close(v_fds.at(i)[P_READ])) {
-            perror("close");
-            exit(1);
+        if (i != 0) {
+            if (-1 == close(v_fds.at(i-1)[P_READ])) {
+                perror("close");
+                exit(1);
+            }
+            if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+                perror("close");
+                exit(1);
+            }
         }
-        if (-1 == close(v_fds.at(i)[P_WRITE])) {
-            perror("close");
-            exit(1);
-        }
-
     }
     return 0;
 }
@@ -143,16 +137,11 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
         v_wordscmds.push_back(words(v_commands.at(i)));
     }
     vector<int *> v_fds;
-    int fd[2];
+    int fd[2] = {0,0};
     for (unsigned i = 0; i < v_commands.size()-1; i++) {
         v_fds.push_back(fd);
     }
-   vector<int> v_pids(v_fds.size());
-    for (unsigned i = 0; i < v_fds.size(); i++) {
-        
-    }
-    int ind = 0;
-    exec_commands_iopip(v_wordscmds, v_fds, v_pids, ind);
+    exec_commands_iopip(v_wordscmds, v_fds);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
