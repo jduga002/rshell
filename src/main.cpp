@@ -11,6 +11,7 @@ using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
 const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'";
+const char ERROR_IOPIP[] = "rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'";
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
 const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together";
 
@@ -106,12 +107,12 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
             perror("wait");  // program exits if there is an error
             exit(1);
         }
-        if (i != 0) {
-            if (-1 == close(v_fds.at(i-1)[P_READ])) {
+        if (i < v_commands.size()-1) {
+            if (-1 == close(v_fds.at(i)[P_WRITE])) {
                 perror("close");
                 exit(1);
             }
-            if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+            if (-1 == close(v_fds.at(i)[P_READ])) {
                 perror("close");
                 exit(1);
             }
@@ -131,17 +132,68 @@ vector<char *> words(char* command) {
     return v;
 }
 
+vector<char *> words_iopip(char *command) {
+    string orig = command;
+    char in[] = "<";
+    char ininin[] = "<<<";
+    char out[] = ">";
+    char outout[] = ">>";
+    char *str_token = strtok(command, "<>");
+    int i = strlen(str_token);
+    vector<char *> v = words(str_token);
+    v.push_back(NULL);
+    if (orig.at(i) == '<') {
+        if (orig.at(i+1) == '<') 
+            v.push_back(ininin);
+        else v.push_back(in);
+    }
+    else { //orig.at(i) == '>'
+        if (orig.at(i+1) == '<') 
+            v.push_back(outout);
+        else v.push_back(out);
+    }
+    str_token = strtok(NULL, "<>");
+    vector<char *> v2 = words(str_token);
+    v.insert(v.end(), v2.begin(), v2.end());
+    return v;
+
+}
+
+int num_ios(char *word) {
+    int num = 0;
+    for (unsigned i = 0; i < strlen(word); i++) {
+        if (word[i] == '<') {
+            num++;
+            if (word[i+1] == '<')
+                i += 2;
+        }
+        if (word[i] == '>') {
+            num++;
+            if (word[i+1] == '>')
+                i++;
+        }
+    }
+    return num;
+}
+
 void parse_commands_iopip(const vector<char *> &v_commands) {
     vector<vector<char *> > v_wordscmds;
     for (unsigned i = 0; i < v_commands.size(); i++) {
-        v_wordscmds.push_back(words(v_commands.at(i)));
+        int num = num_ios(v_commands.at(i));
+        if (num > 1) {
+            cout << ERROR_IOPIP << endl;
+            return;
+        }
+        else if (num == 1)
+            v_wordscmds.push_back(words_iopip(v_commands.at(i)));
+        else v_wordscmds.push_back(words(v_commands.at(i)));
     }
     vector<int *> v_fds;
     int fd[2] = {0,0};
     for (unsigned i = 0; i < v_commands.size()-1; i++) {
         v_fds.push_back(fd);
     }
-    exec_commands_iopip(v_wordscmds, v_fds);
+    //exec_commands_iopip(v_wordscmds, v_fds);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
@@ -192,7 +244,42 @@ void parse_commands(char *commands) {
     exec_commands(v_commands);
 }
 
-bool isError(char* line) {
+bool isError_iopip(const char* line) {
+    for (unsigned j = 0; j < strlen(line) -1; j++) {
+        if (line[j] == '<') {
+            if (j == 0)
+                return true;
+            else if (line[j-1] == '>' || line[j-1] == '|')
+                return true;
+            else if (line[j+1] == '>' || line[j+1] == '|')
+                return true;
+            else if (line[j-1] != '<')
+                continue;
+            else { // j must be greater than or equal to 2; line[j-1] == '<'
+                if (line[j-2] != '<') return true;
+                else if (line[j-3] == '<') return true;
+            }
+        }
+        else if (line[j] == '>') {
+            if (j == 0)
+                return true;
+            else if (line[j-1] == '|' || line[j+1] == '|')
+                return true;
+            else if (line[j-1] != '>') continue;
+            else { // j must be greater than or equal to 2; line[j-1] == '>'
+                if (line[j-2] == '>') return true;
+            }
+        }
+        else if (j == 0 && line[j] == '|') 
+            return true;
+    }
+    char last = line[strlen(line)-1];
+    if (last == '<' || last == '>' || last == '|')
+        return true;
+    return false;
+}
+
+bool isError(const char* line) {
     for (unsigned j = 0; j < strlen(line) - 1; j++) {
         if (line[j] == ';') {
             if ( line[j+1] == ';')
@@ -264,13 +351,16 @@ int main() {
             conn_iopip(line, has_conn, has_iopip);
             if (has_conn && has_iopip) cout << CONN_IOPIP_ERROR << endl;
             else if (has_iopip) {
-                vector<char *> v_commands;
-                char *string_token = strtok(line, "|");
-                while (string_token != NULL) {
-                    v_commands.push_back(string_token);
-                    string_token = strtok(NULL, "|");
+                if (!isError_iopip(line)) {
+                    vector<char *> v_commands;
+                    char *string_token = strtok(line, "|");
+                    while (string_token != NULL) {
+                        v_commands.push_back(string_token);
+                        string_token = strtok(NULL, "|");
+                    }
+                    parse_commands_iopip(v_commands);
                 }
-                parse_commands_iopip(v_commands);
+                else cout << ERROR_IOPIP << endl;
             }
             else {
                 if (allSpaces(line)) { /* do nothing */ }
