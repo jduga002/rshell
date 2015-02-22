@@ -63,7 +63,6 @@ int exec_command(vector<char *> command) {
 }
 
 int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *> &v_fds) {
-    vector<int> v_pids;
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (i != v_commands.size()-1) {
             if (-1 == pipe(v_fds.at(i))) {
@@ -82,10 +81,27 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
                     perror("Error with dup2");
                     exit(1);
                 }
+                if (-1 == close(v_fds.at(i)[P_READ])) {
+                    perror("close");
+                    exit(1);
+                }
+                if (-1 == close(v_fds.at(i)[P_WRITE])) {
+                    perror("close");
+                    exit(1);
+                }
+
             }
             if (i != 0) {
                 if (-1 == dup2(v_fds.at(i-1)[P_READ],0)) {
                     perror("Error with close");
+                    exit(1);
+                }
+                if (-1 == close(v_fds.at(i-1)[P_READ])) {
+                    perror("close");
+                    exit(1);
+                }
+                if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+                    perror("close");
                     exit(1);
                 }
             }
@@ -97,7 +113,16 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
             exit(0);
         }
         else { //parent process
-            v_pids.push_back(pid);
+            if (i != 0) {
+                if (-1 == close(v_fds.at(i-1)[P_READ])) {
+                    perror("close");
+                    exit(1);
+                }
+                if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+                    perror("close");
+                    exit(1);
+                }
+            }
             //continue loop
         }
     }
@@ -107,17 +132,17 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
             perror("wait");  // program exits if there is an error
             exit(1);
         }
-        if (i < v_commands.size()-1) {
-            if (-1 == close(v_fds.at(i)[P_WRITE])) {
-                perror("close");
-                exit(1);
-            }
-            if (-1 == close(v_fds.at(i)[P_READ])) {
-                perror("close");
-                exit(1);
-            }
-        }
     }
+    /*for (unsigned i = 0; i < v_fds.size(); i++) {
+        if (-1 == close(v_fds.at(i)[P_WRITE])) {
+            perror("close");
+            exit(1);
+        }
+        if (-1 == close(v_fds.at(i)[P_READ])) {
+            perror("close");
+            exit(1);
+        }
+    }*/
     return 0;
 }
 
@@ -193,7 +218,14 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
     for (unsigned i = 0; i < v_commands.size()-1; i++) {
         v_fds.push_back(fd);
     }
-    //exec_commands_iopip(v_wordscmds, v_fds);
+    /*for (unsigned i = 0; i < v_wordscmds.size(); i++) {
+        for (unsigned j = 0; j < v_wordscmds.at(i).size(); j++) {
+            if (v_wordscmds.at(i).at(j) != NULL) cerr << v_wordscmds.at(i).at(j) << endl;
+            else cerr << "It is Null" << endl;
+        }
+        cerr << endl;
+    }*/
+    exec_commands_iopip(v_wordscmds, v_fds);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
