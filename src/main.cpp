@@ -90,6 +90,20 @@ bool hasMultStrings(const vector<char *> &v, const char * string1, const char *s
     return false;
 }
 
+bool last_is_iopip(const vector<char *> &v) {
+    unsigned last = v.size()-1;
+    if (v.at(last) == NULL) return false;
+    if (strcmp(v.at(last), "<") == 0)
+        return true;
+    if (strcmp(v.at(last), ">") == 0)
+        return true;
+    if (strcmp(v.at(last), ">>") == 0)
+        return true;
+    if (strcmp(v.at(last), "<<<") == 0)
+        return true;
+    return false;
+}
+
 int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     int lfds[2], rfds[2];
     for (unsigned i = 0; i < v_commands.size(); i++) {
@@ -106,7 +120,34 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
             return 1;
         }
         else if (pid == 0) { //child process
-            if (i != v_commands.size()-1) {
+            if (hasString(v_commands.at(i), ">")) {
+                char * file;
+                for (unsigned j = 0; j < v_commands.at(i).size(); j++) {
+                    if (v_commands.at(i).at(j) != NULL) {
+                        if (strcmp(v_commands.at(i).at(j), ">") == 0) {
+                            file = v_commands.at(i).at(j+1);
+                            break;
+                        }
+                    }
+                }
+                if (-1 == (rfds[P_WRITE] = open(file, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH))) {
+                    perror("open failed");
+                    exit(1);
+                }
+                if (-1 == dup2(rfds[P_WRITE],1)) {
+                    perror("Error with dup2");
+                    exit(1);
+                }
+                if (i < v_commands.size()-1 && -1 == close(rfds[P_READ])) {
+                    perror("close");
+                    exit(1);
+                }
+                if (-1 == close(rfds[P_WRITE])) {
+                    perror("close");
+                    exit(1);
+                }
+            }
+            else if (i != v_commands.size()-1) {
                 if (-1 == dup2(rfds[P_WRITE],1)) {
                     perror("Error with dup2");
                     exit(1);
@@ -119,9 +160,35 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
                     perror("close");
                     exit(1);
                 }
-
             }
-            if (i != 0) {
+            if (hasString(v_commands.at(i), "<")) {
+                char * file;
+                for (unsigned j = 0; j < v_commands.at(i).size(); j++) {
+                    if (v_commands.at(i).at(j) != NULL) {
+                        if (strcmp(v_commands.at(i).at(j), "<") == 0) {
+                            file = v_commands.at(i).at(j+1);
+                            break;
+                        }
+                    }
+                }
+                if (-1 == (lfds[P_READ] = open(file, O_RDONLY))) {
+                    perror("open failed");
+                    exit(1);
+                } 
+                if (-1 == dup2(lfds[P_READ],0)) {
+                    perror("Error with close");
+                    exit(1);
+                }
+                if (-1 == close(lfds[P_READ])) {
+                    perror("close");
+                    exit(1);
+                }
+                if (i != 0 && -1 == close(lfds[P_WRITE])) {
+                    perror("close");
+                    exit(1);
+                }
+            }
+            else if (i != 0) {
                 if (-1 == dup2(lfds[P_READ],0)) {
                     perror("Error with close");
                     exit(1);
@@ -264,6 +331,10 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
         }
         if (hasMultStrings(v_wordscmds.at(i), ">", ">>")) {
             cout << ERROR_MULT_OUTPUT << endl;
+            return;
+        }
+        if (last_is_iopip(v_wordscmds.at(i))) {
+            cout << ERROR_IOPIP << endl;
             return;
         }
     }
