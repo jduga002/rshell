@@ -1,0 +1,397 @@
+Script started on Sun 22 Feb 2015 11:41:59 PM PST
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m #In this script we will be using th e file existingInputFile which I will show now
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m cat existingInputFile 
+this is a test
+Is it working
+Jon Dugan out
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m # open rshell
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshek[Kll
+$ #input redirection
+$ 
+$ # on file that exists
+$ tr a-z A-Z < existingInputFile
+THIS IS A TEST
+IS IT WORKING
+JON DUGAN OUT
+$ # on file that doesnt exist
+$ tr a-z A-Z < thisfiledontexist
+open failed: No such file or directory
+$ # test spacing of <
+$ cat <existinInputFile
+open failed: No such file or directory
+$ #oops,        # cat  < existingInputFile
+this is a test
+Is it working
+Jon Dugan out
+$ cat<existingInputT File
+this is a test
+Is it working
+Jon Dugan out
+$ #no arg
+$ cat <
+rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'
+$ #multiple input redirecton  ion
+$ cat < existingInputFile < README.md
+rshell: error on input redirection: please use only one of < or <<< per command
+$ # multiple input redirection with missing arg
+$ cat < < README.md
+rshell: error on input redirection: please use only one of < or <<< per command
+$ cat < existingInputFile <    
+rshell: error on input redirection: please use only one of < or <<< per command
+$ #input redirection with non  existant program
+$ dkdkldslkds < existingInputFile
+execvp: No such file or directory
+$ 
+$ #output redirection
+$ # part one: > symbol
+$ d # to file that exists (first I will prove it existst )
+$ cat existingOutputFile
+hello
+$ echo world > existingOutputFile
+$ cat existingOutputFile
+world
+$ s # now to file that doesnt exists 
+$ s echo world > nonexistantOutputFiel  le
+$ cat nonexistantOutputFile
+world
+$ #test spacing
+$ echo test spacing >existingOutputFile
+$ cat existingOutputFile
+test spacing
+$ lk  echo test it again< existingOutputFile
+test it again
+$ cat existingOup tputFile
+test spacing
+$ echo one more time     ds               # oops i used the wrong symbol let me try that again
+$ echo test it again> exix stingOutputFile
+$ cat existingOutputFile
+test it again
+$ echo one last time>existingOutputFile
+$ cat existingOutputFile
+one last time
+$ #no arg
+$ echo hello > 
+rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'
+$ #multiple output redirectiond 
+$ echo hello > existingOutputFilesd     > nonexistas ntOutputFile
+rshell: error on output redirection: please use only one of > or >> per command
+$ #multiple output redirection with missing arg
+$ echo hello > > existingInu putFile
+rshell: error on output redirection: please use only one of > or >> per command
+$ echo hello > exin stingOutputFile > 
+rshell: error on output redirection: please use only one of > or >> per command
+$ ds  
+$ #ot utput redirection: >> symbol
+$ #remind ourselves wa hat is inside existingOutputf File
+$ cat existingOup tputFile
+one last time
+$ #initio al testl sd 
+$ echo hello >> existingOutputFile
+$ cat existingOutputFile
+one last time
+hello
+$ #now to file that doesnt exist
+$ echo this is a big test >> nose  existance
+open failed: No such file or directory
+$ #well that test failed. Moving on.
+$ #test spacing
+$ echo test spacing >>existingOutputFile
+$ cat existingOutputFile
+one last time
+hello
+test spacing
+$ echo more tests>> existingOutputFile
+$ cat existingOutputFile
+one last time
+hello
+test spacing
+more tests
+$ echo one more time>>existingOutputFile
+$ cat existingOutpuF tFile
+one last time
+hello
+test spacing
+more tests
+one more time
+$ #no arg
+$ echo hello >>
+rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'
+$ #multiple of >>
+$ echo hello >> existingIno putFile >> existrin   ingOutputFile
+rshell: error on output redirection: please use only one of > or >> per command
+$ #multiple output redirection with missing arg
+$ echo hello >> >> existingOutputFile
+rshell: error on output redirection: please use only one of > or >> per command
+$ echo hello >> existingOutputFile >> 
+rshell: error on output redirection: please use only one of > or >> per command
+$ 
+$ #output redirecton  ion with > and >> with bad     nonexistant program
+$ dkdk > existingOutputFile
+execvp: No such file or directory
+$ kdlsjlds >> existingOutputFile
+execvp: No such file or directory
+$ dkdsk >> nonexistantFileThing
+open failed: No such file or directory
+$ #another test failed. guess I didn't implement >> completelu y w right.
+$ dkjdksjf > nonexistantThingamajig
+execvp: No such file or directory
+$ ls
+a.out  existingInputFile   grep     Makefile		   nonexistantThingamajig  src
+bin    existingOutputFile  LICENSE  nonexistantOutputFile  README.md		   tests
+$ 
+$ #combing ing input and output
+$ cat < existingInputFile > existingOutputFile
+$ cat existingOutputFile
+this is a test
+Is it working
+Jon Dugan out
+$ #switch < and >
+$ cat > existingOutputFile < nonexistantOutputFile
+$ cat nonexistantOutputFile
+world
+$ cat existingOutputFile
+world
+$ # now with , < and >>
+$ cat < existingInputFile >  > existingOutputFile
+$ cat existingOutputFile
+world
+this is a test
+Is it working
+Jon Dugan out
+$ #swith ch < and <<
+$ cat >> nonexistantOutputFile < existingInputFii le
+$ cat nonexistantOutputFile
+world
+this is a test
+Is it working
+Jon Dugan out
+$ 
+$ #piping
+$ #onepipe
+$ echo hello | tr a-z A-Z
+HELLO
+$ # two pipe
+$ ls | tail -2 | tr a-z A-Z
+SRC
+TESTS
+$ # 3 pipes
+$ ls | tr a-z A-Z | grep i | tail -2
+$ ls    #oops wrog ng test; this should work in a way we can see the results:
+$ ls | tr a-z A-Z | grep I | tail -2
+NONEXISTANTOUTPUTFILE
+NONEXISTANTTHINGAMAJIG
+$ #pipe to something ta hat doesn't take input
+$ echo hello | echo world
+world
+$ # same but ht  then pipe to another thing
+$ eh=ch    cho hello | echo world | tr a-z A-Z
+WORLD
+$ # erros   rs with pipe
+$ #pipe to nothing
+$ echo hello | 
+Segmentation fault
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m #oh crap, another bug. Oh well.
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m #restart rshell
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ #try again but no space after |
+$ echo hello |
+rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'
+$ # so forgot to fix if there is space after bar. 
+$ #let's see if two pipes in a row work
+$ eh cho hello | | tr a-z A-Z
+Segmentation fault
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m #yep [K, I forgot to check for if we h ave only whitespace in a certain command. That shouldn't be too hard to fix, but it's too lat [Ke  at night, so forget it.
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m restart rshell[1@#
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ #pipe with not real program
+$ dkfjdskl | tr a-z A-Z
+execvp: No such file or directory
+$ echo hello | dkdsl
+execvp: No such file or directory
+$ echo hello | dkdk | echo world
+world
+execvp: No such file or directory
+$ #Combingin   ing it all
+$ 
+$ #pipe with input redirection
+$ cat < existingInputFile | tail -1
+Jon Dugan out
+$ #many pipe begginning with input redirection
+$ cat < existinginputFile | tail -1 | tr a-z A-Z
+open failed: No such file or directory
+$ #oops misspelled file let f me try again
+$ cat < existingInputFile | tail -1 | tr az -z A-Z
+JON DUGAN OUT
+$ #input at end
+$ ls | cat < exs istingInputFile
+this is a test
+Is it working
+Jon Dugan out
+$ #input in middle
+$ ls | cat < existinG GI  ginpu    InputFile | tail -2
+Is it working
+Jon Dugan out
+$ #beginning and end
+$ cat < existingInputFile | tr a-z A-Z | ta  head -2 LICENSE
+GNU GENERAL PUBLIC LICENSE
+                       Version 2, June 1991
+$ 
+$ #pipe wih th output redirection: >
+$ echo hello world | tr a-z A-Z > existingOup tpi utFile
+$ cat existingO	out   utputFile
+HELLO WORLD
+$ #many pie pes ending wiht  th output redirection
+$ ls | tail -1 
+tests
+$  t  #oops accidentally hit enter let me try again
+$ ls | tail -1 | tr a-z A-Z > existig ngOutputFile
+$ cat existingOutputFile
+TESTS
+$ #output in middle and beginning
+$ ls | tail -2 > existingOutputFile | tr a-z A-Z
+$ cat existingOutputFile
+src
+tests
+$ echo hello > existingOutputFile | ehco      tr a-z A-Z
+$ cat existingOutputFile
+hello
+$ #output in both beginning and end
+$ echo hello>existingOutputFile | tr a-z A-Z | ls | tail -2 >nonexistantfile
+$ cat existingOutputFile
+hello
+$ cat nonexistantfile
+src
+tests
+$ 
+$ #pipe with output redirection" >>
+$ echo hello world | tr a-z A-Z > existingOutputFile
+$ cat existingOutputFile
+HELLO WORLD
+$ # many pipes working with >>                          oops wrog ng symbol let me try again
+$ echo hello world | tr a-z A-z Z >> existingOutputFile
+$ cat existingOutputFile
+HELLO WORLD
+HELLO WORLD
+$ # many pipes ending with >> output redirection
+$ ls | tail -1 | tr a-z A-Z >> existingOutputFile
+$ cat existingOutputFile
+HELLO WORLD
+HELLO WORLD
+TESTS
+$ # output in md iddle
+$ ls | taile  -2 >> existingOutputFile | tr a-z A-z Z
+$ ct at existingOutputFile
+HELLO WORLD
+HELLO WORLD
+TESTS
+src
+tests
+$ #outptu  ut i  n beginning
+$ echo hello >> existingIn  OutputFile | tr a-z A-Z | ls | ta           Z 
+$ cat existingOutputFile
+HELLO WORLD
+HELLO WORLD
+TESTS
+src
+tests
+hello
+$ #output in both beginning and end
+$ echo world >> existingOutputFile | tr a-z A-Z | ls | tail -2 >> nonexistantfile
+$ cat existingOutputFile
+HELLO WORLD
+HELLO WORLD
+TESTS
+src
+tests
+hello
+world
+$ cat nonexistantfile
+src
+tests
+src
+tests
+$ $ #this workd ed because nonexistatn  ntfile already existed actually. other  wise would have been seg fault
+$ 
+$ #combining all three: |, <, >, and >>^[[D\      >
+$ cat < existingInputFile | tr A-A   a-z A-Z | tee newou  OutputFile1 | tr A-Z a-z > newOutputFile2
+$ cat newOutputFile1
+THIS IS A TEST
+IS IT WORKING
+JON DUGAN OUT
+$ cat newOutputFile2
+this is a test
+is it working
+jon dugan out
+$ cat < existingInputFile | tr a-z A-Z } | tee newOutputFile3 | tr A-Z a-z z >> newOutputFile2
+$ cat newOutputFile3
+THIS IS A TEST
+IS IT WORKING
+JON DUGAN OUT
+$ cat newOutputFile4
+cat: newOutputFile4: No such file or directory
+$ #oops wrong file. If I had r tried up above on this file, would cause seg fault
+$ cat newOutputFile2
+this is a test
+is it working
+jon dugan out
+this is a test
+is it working
+jon dugan out
+$ erros rs      # erros rs on parsing                   #more combos
+$ cat < exiting    sting  InputFile |   >> newOutputFile2 | tr a0 -z A-Z < existingInputFile | grep J | > compley telynew
+$ cat newOutputFile2
+this is a test
+is it working
+jon dugan out
+this is a test
+is it working
+jon dugan out
+this is a test
+Is it working
+Jon Dugan out
+$ cat completelynew
+JON DUGAN OUT
+$ 
+$ #parsing erros rs on all piping/input output reder  irs
+$ cat < < exit stinInputFile | tr a-z A-Z |   >>    newOutputfiel    File
+rshell: error on input redirection: please use only one of < or <<< per command
+$ cat < existingInputFile | tr a-z A-z Z > >
+rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'
+$ cat < exisi tig ngInputFie le 
+this is a test
+Is it working
+Jon Dugan out
+$   #oops try again
+$ cat < existingInputFile | tr a-z A-Z | > newOutputFile
+Segmentation fault
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m #yep, empty spaces after | are caus e[King seg faults. too bad.
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m res[K[K[K#restra[K[Kart rshell
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m bin/rshell
+$ # try nonexistant commands
+$ dkdk < existingInputFile | tr a-Z z A-Z | tail -1 > newOup tputFile
+execvp: No such file or directory
+$ cat < existingInputFile | dkj -a -b | tail -1 > newOutputFile
+execvp: No such file or directory
+$ # buth   oth input and output rd edirection between each pipe
+$ cat < exos  istingInputFile >> nonexistantfile | ls  ls | tail -2
+src
+tests
+$ cat nonexistantfile
+src
+tests
+src
+tests
+this is a test
+Is it working
+Jon Dugan out
+$ 
+$ 
+$ 
+$ 
+$ 
+$ 
+$ 
+$ #E Well that seems to be enough tests. So everything works except using >> inot  to a nonexistant file, and no command at all after pipe causes seg fault
+$ exit
+[01;32mdr1zz1tdudden@dr1zz1tdudden-VirtualBox[01;34m ~/Documents/rshell $[00m exit
+Script done on Mon 23 Feb 2015 01:23:31 AM PST
