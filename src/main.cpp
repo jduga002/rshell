@@ -182,53 +182,45 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
         if (has_ios(v_commands.at(i))) {
             v_wordscmds.push_back(vector<char *>());
             string orig = v_commands.at(i);
+            vector<char *> v;
             char *str_token = strtok(v_commands.at(i), "<>");
             unsigned i = 0;
             while (str_token != NULL) {
-                cout << "str_token=" << str_token << endl;
                 i += strlen(str_token);
-                v_wordscmds.at(v_wordscmds.size()-1).push_back(str_token);
-                for (unsigned j = 0; j < v_wordscmds.at(v_wordscmds.size()-1).size(); j++) {
-                    if (v_wordscmds.at(v_wordscmds.size()-1).at(j) == NULL) cout << "It is null" << endl;
-                    else cout << v_wordscmds.at(v_wordscmds.size()-1).at(j) << endl;
-                }
-                cout << endl;
+                v.push_back(str_token);
                 //if (i == 0)
                  //   v.push_back(NULL);
-                cout << "i=" << i << endl;
                 if (i < orig.length()) {
                     if (orig.at(i) == '<') {
                         if (orig.at(i+1) == '<')  {
-                            cout << "pusing back " << ininin << endl;
-                            v_wordscmds.at(v_wordscmds.size()-1).push_back(ininin);
+                            v.push_back(ininin);
                             i += 3;
                         }
                         else {
-                            cout << "pusing back " << in<< endl;
-                            v_wordscmds.at(v_wordscmds.size()-1).push_back(in);
+                            v.push_back(in);
                             i++;
                         }
                     }
                     else if (orig.at(i) == '>') {
                         if (orig.at(i+1) == '>') {
-                            cout << "pusing back " << outout << endl;
-                            v_wordscmds.at(v_wordscmds.size()-1).push_back(outout);
+                            v.push_back(outout);
                             i += 2;
                         }
                         else {
-                            cout << "pusing back " << out<< endl;
-                            v_wordscmds.at(v_wordscmds.size()-1).push_back(out);
+                            v.push_back(out);
                             i++;
                         }
                     }
                 }
                 str_token = strtok(NULL, "<>");
             }
-            cout << "finished strtok()" << endl;
-            for (unsigned j = 0; j < v_wordscmds.at(v_wordscmds.size()-1).size(); j++) { cout << v_wordscmds.at(v_wordscmds.size()-1).at(j) << endl; }
-            cout << "exiting function" << endl;
-        //end of stuff
-            //words_iopip(v_commands.at(i), v_wordscmds.at(v_wordscmds.size()-1));
+            for (unsigned j = 0; j < v.size(); j++) {
+                str_token = strtok(v.at(j), " \t");
+                while (str_token != NULL) {
+                    v_wordscmds.at(v_wordscmds.size()-1).push_back(str_token);
+                    str_token = strtok(NULL, " \t");
+                }
+            }
         }
         else {
             v_wordscmds.push_back(words(v_commands.at(i)));
