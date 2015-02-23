@@ -186,10 +186,10 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
             char *str_token = strtok(v_commands.at(i), "<>");
             unsigned i = 0;
             while (str_token != NULL) {
-                i += strlen(str_token);
                 v.push_back(str_token);
-                //if (i == 0)
-                 //   v.push_back(NULL);
+                if (i == 0)
+                    v.push_back(NULL);
+                i += strlen(str_token);
                 if (i < orig.length()) {
                     if (orig.at(i) == '<') {
                         if (orig.at(i+1) == '<')  {
@@ -215,10 +215,13 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
                 str_token = strtok(NULL, "<>");
             }
             for (unsigned j = 0; j < v.size(); j++) {
-                str_token = strtok(v.at(j), " \t");
-                while (str_token != NULL) {
-                    v_wordscmds.at(v_wordscmds.size()-1).push_back(str_token);
-                    str_token = strtok(NULL, " \t");
+                if (v.at(j) == NULL) v_wordscmds.at(v_wordscmds.size()-1).push_back(NULL);
+                else {
+                    str_token = strtok(v.at(j), " \t");
+                    while (str_token != NULL) {
+                        v_wordscmds.at(v_wordscmds.size()-1).push_back(str_token);
+                        str_token = strtok(NULL, " \t");
+                    }
                 }
             }
         }
