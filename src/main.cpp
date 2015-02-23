@@ -63,9 +63,10 @@ int exec_command(vector<char *> command) {
 }
 
 int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *> &v_fds) {
+    int lfds[2], rfds[2];
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (i != v_commands.size()-1) {
-            if (-1 == pipe(v_fds.at(i))) {
+            if (-1 == pipe(rfds)) {
                 perror("Error with pipe");
                 return 1;
             }
@@ -77,30 +78,30 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
         }
         else if (pid == 0) { //child process
             if (i != v_commands.size()-1) {
-                if (-1 == dup2(v_fds.at(i)[P_WRITE],1)) {
+                if (-1 == dup2(rfds[P_WRITE],1)) {
                     perror("Error with dup2");
                     exit(1);
                 }
-                if (-1 == close(v_fds.at(i)[P_READ])) {
+                if (-1 == close(rfds[P_READ])) {
                     perror("close");
                     exit(1);
                 }
-                if (-1 == close(v_fds.at(i)[P_WRITE])) {
+                if (-1 == close(rfds[P_WRITE])) {
                     perror("close");
                     exit(1);
                 }
 
             }
             if (i != 0) {
-                if (-1 == dup2(v_fds.at(i-1)[P_READ],0)) {
+                if (-1 == dup2(lfds[P_READ],0)) {
                     perror("Error with close");
                     exit(1);
                 }
-                if (-1 == close(v_fds.at(i-1)[P_READ])) {
+                if (-1 == close(lfds[P_READ])) {
                     perror("close");
                     exit(1);
                 }
-                if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+                if (-1 == close(lfds[P_WRITE])) {
                     perror("close");
                     exit(1);
                 }
@@ -114,14 +115,18 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
         }
         else { //parent process
             if (i != 0) {
-                if (-1 == close(v_fds.at(i-1)[P_READ])) {
+                if (-1 == close(lfds[P_READ])) {
                     perror("close");
                     exit(1);
                 }
-                if (-1 == close(v_fds.at(i-1)[P_WRITE])) {
+                if (-1 == close(lfds[P_WRITE])) {
                     perror("close");
                     exit(1);
                 }
+            }
+            if (i < v_commands.size()-1) {
+                lfds[P_READ] = rfds[P_READ];
+                lfds[P_WRITE] = rfds[P_WRITE];
             }
             //continue loop
         }
@@ -153,79 +158,97 @@ vector<char *> words(char* command) {
         v.push_back(str_token);
         str_token = strtok(NULL, " \t");
     }
-    v.push_back(NULL);
+    //v.push_back(NULL);
     return v;
 }
 
-vector<char *> words_iopip(char *command) {
-    string orig = command;
-    char in[] = "<";
-    char ininin[] = "<<<";
-    char out[] = ">";
-    char outout[] = ">>";
-    char *str_token = strtok(command, "<>");
-    int i = strlen(str_token);
-    vector<char *> v = words(str_token);
-    v.push_back(NULL);
-    if (orig.at(i) == '<') {
-        if (orig.at(i+1) == '<') 
-            v.push_back(ininin);
-        else v.push_back(in);
-    }
-    else { //orig.at(i) == '>'
-        if (orig.at(i+1) == '<') 
-            v.push_back(outout);
-        else v.push_back(out);
-    }
-    str_token = strtok(NULL, "<>");
-    vector<char *> v2 = words(str_token);
-    v.insert(v.end(), v2.begin(), v2.end());
-    return v;
-
-}
-
-int num_ios(char *word) {
-    int num = 0;
+bool has_ios(const char *word) {
     for (unsigned i = 0; i < strlen(word); i++) {
-        if (word[i] == '<') {
-            num++;
-            if (word[i+1] == '<')
-                i += 2;
-        }
-        if (word[i] == '>') {
-            num++;
-            if (word[i+1] == '>')
-                i++;
-        }
+        if (word[i] == '<')
+            return true;
+        if (word[i] == '>')
+            return true;
     }
-    return num;
+    return false;
 }
 
 void parse_commands_iopip(const vector<char *> &v_commands) {
     vector<vector<char *> > v_wordscmds;
+    char in[] = "<";
+    char ininin[] = "<<<";
+    char out[] = ">";
+    char outout[] = ">>";
     for (unsigned i = 0; i < v_commands.size(); i++) {
-        int num = num_ios(v_commands.at(i));
-        if (num > 1) {
-            cout << ERROR_IOPIP << endl;
-            return;
+        if (has_ios(v_commands.at(i))) {
+            v_wordscmds.push_back(vector<char *>());
+            string orig = v_commands.at(i);
+            char *str_token = strtok(v_commands.at(i), "<>");
+            unsigned i = 0;
+            while (str_token != NULL) {
+                cout << "str_token=" << str_token << endl;
+                i += strlen(str_token);
+                v_wordscmds.at(v_wordscmds.size()-1).push_back(str_token);
+                for (unsigned j = 0; j < v_wordscmds.at(v_wordscmds.size()-1).size(); j++) {
+                    if (v_wordscmds.at(v_wordscmds.size()-1).at(j) == NULL) cout << "It is null" << endl;
+                    else cout << v_wordscmds.at(v_wordscmds.size()-1).at(j) << endl;
+                }
+                cout << endl;
+                //if (i == 0)
+                 //   v.push_back(NULL);
+                cout << "i=" << i << endl;
+                if (i < orig.length()) {
+                    if (orig.at(i) == '<') {
+                        if (orig.at(i+1) == '<')  {
+                            cout << "pusing back " << ininin << endl;
+                            v_wordscmds.at(v_wordscmds.size()-1).push_back(ininin);
+                            i += 3;
+                        }
+                        else {
+                            cout << "pusing back " << in<< endl;
+                            v_wordscmds.at(v_wordscmds.size()-1).push_back(in);
+                            i++;
+                        }
+                    }
+                    else if (orig.at(i) == '>') {
+                        if (orig.at(i+1) == '>') {
+                            cout << "pusing back " << outout << endl;
+                            v_wordscmds.at(v_wordscmds.size()-1).push_back(outout);
+                            i += 2;
+                        }
+                        else {
+                            cout << "pusing back " << out<< endl;
+                            v_wordscmds.at(v_wordscmds.size()-1).push_back(out);
+                            i++;
+                        }
+                    }
+                }
+                str_token = strtok(NULL, "<>");
+            }
+            cout << "finished strtok()" << endl;
+            for (unsigned j = 0; j < v_wordscmds.at(v_wordscmds.size()-1).size(); j++) { cout << v_wordscmds.at(v_wordscmds.size()-1).at(j) << endl; }
+            cout << "exiting function" << endl;
+        //end of stuff
+            //words_iopip(v_commands.at(i), v_wordscmds.at(v_wordscmds.size()-1));
         }
-        else if (num == 1)
-            v_wordscmds.push_back(words_iopip(v_commands.at(i)));
-        else v_wordscmds.push_back(words(v_commands.at(i)));
+        else {
+            v_wordscmds.push_back(words(v_commands.at(i)));
+            v_wordscmds.at(i).push_back(NULL);
+        }
     }
     vector<int *> v_fds;
     int fd[2] = {0,0};
     for (unsigned i = 0; i < v_commands.size()-1; i++) {
         v_fds.push_back(fd);
     }
-    /*for (unsigned i = 0; i < v_wordscmds.size(); i++) {
+    cout << "entering loop" << endl;
+    for (unsigned i = 0; i < v_wordscmds.size(); i++) {
         for (unsigned j = 0; j < v_wordscmds.at(i).size(); j++) {
             if (v_wordscmds.at(i).at(j) != NULL) cerr << v_wordscmds.at(i).at(j) << endl;
             else cerr << "It is Null" << endl;
         }
         cerr << endl;
-    }*/
-    exec_commands_iopip(v_wordscmds, v_fds);
+    }
+    //exec_commands_iopip(v_wordscmds, v_fds);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
@@ -234,6 +257,7 @@ void exec_commands(const vector<char *> &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i+=2) {
         if ( (x == 0 && strcmp(connector,"&&") == 0) || (x != 0 && strcmp(connector,"||") == 0) ) {
             vector<char *> command = words(v_commands.at(i));
+            command.push_back(NULL);
             x = exec_command(command);
         }
         if ( i < v_commands.size() - 1 ) {
