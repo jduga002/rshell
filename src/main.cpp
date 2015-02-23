@@ -14,6 +14,8 @@ const char ERROR[] = "rshell: syntax error on connector: use ';', '&&', or '||'"
 const char ERROR_IOPIP[] = "rshell: syntax error on IO redirection: use '<', '<<<', '>', '>>'. or '|'";
 const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rshell";
 const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together";
+const char ERROR_MULT_INPUT[] = "rshell: error on input redirection: please use only one of < or <<< per command";
+const char ERROR_MULT_OUTPUT[] = "rshell: error on output redirection: please use only one of > or >> per command";
 
 const int P_READ = 0;
 const int P_WRITE = 1;
@@ -62,9 +64,36 @@ int exec_command(vector<char *> command) {
     return x;
 }
 
-int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *> &v_fds) {
+bool hasString(const vector<char *> &v, const char * string) {
+    for (unsigned i = 0; i < v.size(); i++) {
+        if (v.at(i) != NULL) {
+            if (strcmp(v.at(i), string) == 0) 
+                return true;
+        }
+    }
+    return false;
+}
+
+bool hasMultStrings(const vector<char *> &v, const char * string1, const char *string2) {
+    unsigned cnt = 0;
+    for (unsigned i = 0; i < v.size(); i++) {
+        if (v.at(i) != NULL) {
+            if (strcmp(v.at(i), string1) == 0) 
+                cnt++;
+            else if (strcmp(v.at(i), string2) == 0) 
+                cnt++;
+
+            if (cnt > 1) 
+                return true;
+        }
+    }
+    return false;
+}
+
+int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     int lfds[2], rfds[2];
     for (unsigned i = 0; i < v_commands.size(); i++) {
+        //if (hasString(v_commands.at(i), "<")) { }
         if (i != v_commands.size()-1) {
             if (-1 == pipe(rfds)) {
                 perror("Error with pipe");
@@ -138,16 +167,6 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands, const vector<int *>
             exit(1);
         }
     }
-    /*for (unsigned i = 0; i < v_fds.size(); i++) {
-        if (-1 == close(v_fds.at(i)[P_WRITE])) {
-            perror("close");
-            exit(1);
-        }
-        if (-1 == close(v_fds.at(i)[P_READ])) {
-            perror("close");
-            exit(1);
-        }
-    }*/
     return 0;
 }
 
@@ -230,11 +249,6 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
             v_wordscmds.at(i).push_back(NULL);
         }
     }
-    vector<int *> v_fds;
-    int fd[2] = {0,0};
-    for (unsigned i = 0; i < v_commands.size()-1; i++) {
-        v_fds.push_back(fd);
-    }
     cout << "entering loop" << endl;
     for (unsigned i = 0; i < v_wordscmds.size(); i++) {
         for (unsigned j = 0; j < v_wordscmds.at(i).size(); j++) {
@@ -243,7 +257,17 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
         }
         cerr << endl;
     }
-    //exec_commands_iopip(v_wordscmds, v_fds);
+    for (unsigned i = 0; i < v_wordscmds.size(); i++) {
+        if (hasMultStrings(v_wordscmds.at(i), "<", "<<<")) {
+            cout << ERROR_MULT_INPUT << endl;
+            return;
+        }
+        if (hasMultStrings(v_wordscmds.at(i), ">", ">>")) {
+            cout << ERROR_MULT_OUTPUT << endl;
+            return;
+        }
+    }
+    exec_commands_iopip(v_wordscmds);
 }
 
 void exec_commands(const vector<char *> &v_commands) {
