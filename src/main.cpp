@@ -158,7 +158,6 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
                         }
                     }
                 }
-                cerr << file << endl;
                 if (-1 == (rfds[P_WRITE] = open(file, O_WRONLY|O_APPEND, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH))) {
                     perror("open failed");
                     exit(1);
