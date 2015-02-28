@@ -286,6 +286,16 @@ bool has_ios(const char *word) {
     return false;
 }
 
+bool allSpaces(char *line) {
+    unsigned size = strlen(line);
+    for (unsigned i = 0; i < size; i ++) {
+        if (!(line[i] == ' ' || line[i] == '\t') ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void parse_commands_iopip(const vector<char *> &v_commands) {
     vector<vector<char *> > v_wordscmds;
     char in[] = "<";
@@ -293,6 +303,10 @@ void parse_commands_iopip(const vector<char *> &v_commands) {
     char out[] = ">";
     char outout[] = ">>";
     for (unsigned i = 0; i < v_commands.size(); i++) {
+        if (allSpaces(v_commands.at(i))) {
+            cout << ERROR_IOPIP << endl;
+            return;
+        }
         if (has_ios(v_commands.at(i))) {
             v_wordscmds.push_back(vector<char *>());
             string orig = v_commands.at(i);
@@ -374,16 +388,6 @@ void exec_commands(const vector<char *> &v_commands) {
             strcpy(connector, v_commands.at(i+1));
         }
     }
-}
-
-bool allSpaces(char *line) {
-    unsigned size = strlen(line);
-    for (unsigned i = 0; i < size; i ++) {
-        if (!(line[i] == ' ' || line[i] == '\t') ) {
-            return false;
-        }
-    }
-    return true;
 }
 
 void parse_commands(char *commands) {
