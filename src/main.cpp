@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <boost/tokenizer.hpp>
 using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
@@ -35,6 +36,22 @@ void getHost(char *hostName) {
     }
 }
 
+void find_path(const char *command, string path) {
+    char *environ_path;
+    if (NULL == (environ_path = getenv("PATH"))) {
+        perror("getenv: error in $PATH");
+        exit(1);
+    }
+    string path_copy = environ_path;
+    typedef boost::tokenizer<boost::char_separator<char> > token;
+    boost::char_separator<char> sep(":");
+    token tokens(path_copy, sep);
+    for (token::iterator tok_it = tokens.begin(); tok_it != tokens.end(); tok_it++) {
+        path = *tok_it;
+        cout << *tok_it << endl;
+    }
+}
+
 int exec_command(vector<char *> command) { 
     if (strcmp(command[0],"exit") == 0)
         exit(0);
@@ -49,6 +66,8 @@ int exec_command(vector<char *> command) {
     else if (pid == 0) { // child process
         //execute command
         char **command_arr = &command[0];
+        char *path = NULL;
+        find_path(command_arr[0], path);
         if (-1 == execvp(command_arr[0], command_arr)) {
             perror("execvp");
             exit(1);
