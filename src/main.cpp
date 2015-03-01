@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <dirent.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <stdio.h>
-#include <boost/tokenizer.hpp>
+#include <errno.h>
 using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
@@ -36,20 +38,40 @@ void getHost(char *hostName) {
     }
 }
 
-void find_path(const char *command, string path) {
+void find_path(const char *command, char *path) {
     char *environ_path;
     if (NULL == (environ_path = getenv("PATH"))) {
         perror("getenv: error in $PATH");
         exit(1);
     }
-    string path_copy = environ_path;
-    typedef boost::tokenizer<boost::char_separator<char> > token;
-    boost::char_separator<char> sep(":");
-    token tokens(path_copy, sep);
-    for (token::iterator tok_it = tokens.begin(); tok_it != tokens.end(); tok_it++) {
-        path = *tok_it;
-        cout << *tok_it << endl;
+    char * str_tok = strtok(environ_path, ":");
+    while (str_tok != NULL) {
+        DIR *p_dir;
+        if (NULL == (p_dir = opendir(str_tok))) {
+            perror("opendir");
+            exit(1);
+        }
+        struct dirent *p_dirent;
+        while (NULL != (p_dirent = readdir(p_dir))) {
+            if (strcmp(p_dirent->d_name, command) == 0) {
+                cout << "It was found" << endl;
+                cout << "FIXME!!" << endl;
+                return;
+            }
+        }
+        if (errno == EBADF) {
+            perror("readdir");
+            exit(1);
+        }
+        str_tok = strtok(NULL, ":");
     }
+}
+
+bool has_slash(const char *string) {
+    for (int i = 0; string[i] != '\0'; i++) {
+        if (string[i] == '/') return true;
+    }
+    return false;
 }
 
 int exec_command(vector<char *> command) { 
@@ -66,11 +88,15 @@ int exec_command(vector<char *> command) {
     else if (pid == 0) { // child process
         //execute command
         char **command_arr = &command[0];
-        char *path = NULL;
-        find_path(command_arr[0], path);
-        if (-1 == execvp(command_arr[0], command_arr)) {
-            perror("execvp");
-            exit(1);
+        if (has_slash(command_arr[0])) {
+            if (-1 == execv(command_arr[0], command_arr)) {
+                perror("execv");
+                exit(1);
+            }
+        }
+        else {
+            char *path = NULL;
+            find_path(command_arr[0], path);
         }
         exit(0);
     } 
