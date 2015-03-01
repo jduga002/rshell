@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <errno.h>
+#include <signal.h>
 using namespace std;
 
 const int MAX_LINE_LENGTH = 2048;
@@ -23,6 +24,10 @@ const char ERROR_NOT_FOUND[] = "execv: command not found";
 
 const int P_READ = 0;
 const int P_WRITE = 1;
+
+void handler(int i) {
+    if (i == SIGINT) { }
+}
 
 // error in function; will go unused
 void getUsername(char *username) {
@@ -557,6 +562,8 @@ void conn_iopip(const char * const line, bool &has_conn, bool &has_iopip) {
 }
 
 int main() {
+
+    signal(SIGINT, handler);
 
     char line[MAX_LINE_LENGTH]; 
     cerr << "$ ";
