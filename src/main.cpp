@@ -55,14 +55,13 @@ void find_and_exec(char **command_arr) {
         struct dirent *p_dirent;
         while (NULL != (p_dirent = readdir(p_dir))) {
             if (strcmp(p_dirent->d_name, command_arr[0]) == 0) {
-                //string path = str_tok;
-                //path += "/"; path += command_arr[0];
-                //command_arr[0] = path.c_str();
-                char path[strlen(str_tok) + 2];
-                cout << "str_tok=" << str_tok << endl;
-                cout << "It was found" << endl;
-                cout << "FIXME!!" << endl;
-                return;
+                string path = str_tok;
+                path += "/"; path += command_arr[0];
+                command_arr[0] = &path[0];
+                if (-1 == execv(command_arr[0], command_arr)) {
+                    perror("execv");
+                    exit(1);
+                }
             }
         }
         if (errno == EBADF) {
@@ -282,11 +281,15 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
                 }
             }
             char **command_arr = &v_commands.at(i)[0];
-            if (-1 == execvp(command_arr[0], command_arr)) {
-                perror("execvp");
-                exit(1);
+            if (has_slash(command_arr[0])) {
+                if (-1 == execv(command_arr[0], command_arr)) {
+                    perror("execv");
+                    exit(1);
+                }
             }
-            exit(0);
+            else {
+                find_and_exec(command_arr);
+            }
         }
         else { //parent process
             if (i != 0) {
