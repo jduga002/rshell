@@ -19,6 +19,7 @@ const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rsh
 const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together";
 const char ERROR_MULT_INPUT[] = "rshell: error on input redirection: please use only one of < or <<< per command";
 const char ERROR_MULT_OUTPUT[] = "rshell: error on output redirection: please use only one of > or >> per command";
+const char ERROR_NOT_FOUND[] = "execv: command not found";
 
 const int P_READ = 0;
 const int P_WRITE = 1;
@@ -38,7 +39,7 @@ void getHost(char *hostName) {
     }
 }
 
-void find_path(const char *command, char *path) {
+void find_and_exec(char **command_arr) {
     char *environ_path;
     if (NULL == (environ_path = getenv("PATH"))) {
         perror("getenv: error in $PATH");
@@ -53,7 +54,12 @@ void find_path(const char *command, char *path) {
         }
         struct dirent *p_dirent;
         while (NULL != (p_dirent = readdir(p_dir))) {
-            if (strcmp(p_dirent->d_name, command) == 0) {
+            if (strcmp(p_dirent->d_name, command_arr[0]) == 0) {
+                //string path = str_tok;
+                //path += "/"; path += command_arr[0];
+                //command_arr[0] = path.c_str();
+                char path[strlen(str_tok) + 2];
+                cout << "str_tok=" << str_tok << endl;
                 cout << "It was found" << endl;
                 cout << "FIXME!!" << endl;
                 return;
@@ -65,6 +71,7 @@ void find_path(const char *command, char *path) {
         }
         str_tok = strtok(NULL, ":");
     }
+    cerr << ERROR_NOT_FOUND << endl;
 }
 
 bool has_slash(const char *string) {
@@ -95,8 +102,7 @@ int exec_command(vector<char *> command) {
             }
         }
         else {
-            char *path = NULL;
-            find_path(command_arr[0], path);
+            find_and_exec(command_arr);
         }
         exit(0);
     } 
