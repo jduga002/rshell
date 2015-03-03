@@ -50,7 +50,9 @@ void find_and_exec(char **command_arr) {
         perror("getenv: error in $PATH");
         exit(1);
     }
-    char * str_tok = strtok(environ_path, ":");
+    string env_path_str = environ_path;
+    char *path_cpy = &env_path_str[0];
+    char * str_tok = strtok(path_cpy, ":");
     while (str_tok != NULL) {
         DIR *p_dir;
         if (NULL == (p_dir = opendir(str_tok))) {
