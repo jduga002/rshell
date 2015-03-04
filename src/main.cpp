@@ -22,6 +22,7 @@ const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not suppor
 const char ERROR_MULT_INPUT[] = "rshell: error on input redirection: please use only one of < or <<< per command";
 const char ERROR_MULT_OUTPUT[] = "rshell: error on output redirection: please use only one of > or >> per command";
 const char ERROR_NOT_FOUND[] = "execv: command not found";
+const char CD_ERR[] = "cd: usage: cd directory";
 
 const int P_READ = 0;
 const int P_WRITE = 1;
@@ -99,6 +100,12 @@ bool has_slash(const char *string) {
 int exec_command(vector<char *> command) { 
     if (strcmp(command[0],"exit") == 0)
         exit(0);
+    else if (strcmp(command[0],"cd") == 0) {
+        if (command.size() == 2) { // no args passed to cd
+            cerr << CD_ERR << endl;
+            return 1;
+        } 
+    }
     
     int x = 1;
     int pid = fork();
@@ -175,6 +182,12 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (strcmp(v_commands.at(i).at(0),"exit") == 0)
             exit(0);
+        else if (strcmp(v_commands.at(i).at(0),"cd") == 0) {
+            if (v_commands.at(i).size() == 2) { // no args passed to cd
+                cerr << CD_ERR << endl;
+                return 1;
+            } 
+        }
         if (i != v_commands.size()-1) {
             if (-1 == pipe(rfds)) {
                 perror("Error with pipe");
@@ -634,7 +647,7 @@ int main() {
             perror("error getting current working directory");
             exit(1);
         }
-        cout << curr_dir << " $ " << flush;
+        cout << curr_dir << " $ ";
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
