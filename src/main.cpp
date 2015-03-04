@@ -577,7 +577,12 @@ int main() {
     signal(SIGINT, handler);
 
     char line[MAX_LINE_LENGTH]; 
-    cerr << "$ ";
+    string curr_dir = getenv("PWD");
+    if (&curr_dir[0] == NULL) {
+        perror("error getting current working directory");
+        exit(1);
+    }
+    cout << curr_dir << " $ " << flush;
     cin.getline(line, MAX_LINE_LENGTH);
     line[MAX_LINE_LENGTH-1] = '\0';
     if (strlen(line) == MAX_LINE_LENGTH - 1) {
@@ -624,7 +629,12 @@ int main() {
             }
         }
 
-        cout << "$ " << flush;
+        curr_dir = getenv("PWD");
+        if (&curr_dir[0] == NULL) {
+            perror("error getting current working directory");
+            exit(1);
+        }
+        cout << curr_dir << " $ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
