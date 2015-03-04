@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <errno.h>
@@ -65,6 +66,10 @@ void find_and_exec(char **command_arr) {
                 string path = str_tok;
                 path += "/"; path += command_arr[0];
                 command_arr[0] = &path[0];
+                if (-1 == closedir(p_dir)) {
+                    perror("closedir");
+                    exit(1);
+                }
                 if (-1 == execv(command_arr[0], command_arr)) {
                     perror("execv");
                     exit(1);
@@ -73,6 +78,10 @@ void find_and_exec(char **command_arr) {
         }
         if (errno == EBADF) {
             perror("readdir");
+            exit(1);
+        }
+        if (-1 == closedir(p_dir)) {
+            perror("closedir");
             exit(1);
         }
         str_tok = strtok(NULL, ":");
