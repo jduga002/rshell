@@ -46,6 +46,18 @@ void getHost(char *hostName) {
     }
 }
 
+int change_dir(vector<char *> &command) {
+    if (command.size() == 2) { // no args passed to cd
+        cerr << CD_ERR << endl;
+        return 1;
+    }
+    int ret;
+    if (-1 == (ret = chdir(command.at(1))))
+        perror("chdir");
+    return ret;
+}
+
+
 void find_and_exec(char **command_arr) {
     char *environ_path;
     if (NULL == (environ_path = getenv("PATH"))) {
@@ -100,12 +112,8 @@ bool has_slash(const char *string) {
 int exec_command(vector<char *> command) { 
     if (strcmp(command[0],"exit") == 0)
         exit(0);
-    else if (strcmp(command[0],"cd") == 0) {
-        if (command.size() == 2) { // no args passed to cd
-            cerr << CD_ERR << endl;
-            return 1;
-        } 
-    }
+    else if (strcmp(command[0],"cd") == 0)
+        return change_dir(command);
     
     int x = 1;
     int pid = fork();
@@ -183,11 +191,10 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
         if (strcmp(v_commands.at(i).at(0),"exit") == 0)
             exit(0);
         else if (strcmp(v_commands.at(i).at(0),"cd") == 0) {
-            if (v_commands.at(i).size() == 2) { // no args passed to cd
-                cerr << CD_ERR << endl;
-                return 1;
-            } 
+            change_dir(v_commands.at(i));
+            continue;
         }
+        
         if (i != v_commands.size()-1) {
             if (-1 == pipe(rfds)) {
                 perror("Error with pipe");
