@@ -97,6 +97,7 @@ int exec_command(vector<char *> command) {
         exit(1);
     }
     else if (pid == 0) { // child process
+        signal(SIGINT, SIG_DFL);
         //execute command
         char **command_arr = &command[0];
         if (has_slash(command_arr[0])) {
@@ -176,6 +177,7 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
             return 1;
         }
         else if (pid == 0) { //child process
+            signal(SIGINT, SIG_DFL);
             if (hasString(v_commands.at(i), ">")) {
                 char * file;
                 for (unsigned j = 0; j < v_commands.at(i).size(); j++) {
