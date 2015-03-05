@@ -45,7 +45,7 @@ void getHost(char *hostName) {
     }
 }
 
-void find_and_exec(char **command_arr) {
+bool find_path(string &command) {
     char *environ_path;
     if (NULL == (environ_path = getenv("PATH"))) {
         perror("getenv: error in $PATH");
@@ -62,18 +62,15 @@ void find_and_exec(char **command_arr) {
         }
         struct dirent *p_dirent;
         while (NULL != (p_dirent = readdir(p_dir))) {
-            if (strcmp(p_dirent->d_name, command_arr[0]) == 0) {
+            if (strcmp(p_dirent->d_name, &command[0]) == 0) {
                 string path = str_tok;
-                path += "/"; path += command_arr[0];
-                command_arr[0] = &path[0];
+                path += "/"; path += command;
+                command = path;
                 if (-1 == closedir(p_dir)) {
                     perror("closedir");
                     exit(1);
                 }
-                if (-1 == execv(command_arr[0], command_arr)) {
-                    perror("execv");
-                    exit(1);
-                }
+                return true;
             }
         }
         if (errno == EBADF) {
@@ -86,19 +83,28 @@ void find_and_exec(char **command_arr) {
         }
         str_tok = strtok(NULL, ":");
     }
-    cerr << ERROR_NOT_FOUND << endl;
+    return false;
 }
 
-bool has_slash(const char *string) {
-    for (int i = 0; string[i] != '\0'; i++) {
-        if (string[i] == '/') return true;
+bool has_slash(const string &str) {
+    for (unsigned i = 0; i < str.size(); i++) {
+        if (str.at(i) == '/') return true;
     }
     return false;
 }
 
-int exec_command(vector<char *> command) { 
+int exec_command(vector<char *> &command) { 
     if (strcmp(command[0],"exit") == 0)
         exit(0);
+
+    string cmd = command.at(0);
+    if (!has_slash(cmd)) {
+        if (!find_path(cmd)) {
+            cerr << ERROR_NOT_FOUND << endl;
+            return 1;
+        }
+        command.at(0) = &cmd[0];
+    }
     
     int x = 1;
     int pid = fork();
@@ -110,14 +116,9 @@ int exec_command(vector<char *> command) {
     else if (pid == 0) { // child process
         //execute command
         char **command_arr = &command[0];
-        if (has_slash(command_arr[0])) {
-            if (-1 == execv(command_arr[0], command_arr)) {
-                perror("execv");
-                exit(1);
-            }
-        }
-        else {
-            find_and_exec(command_arr);
+        if (-1 == execv(command_arr[0], command_arr)) {
+            perror("execv");
+            exit(1);
         }
         exit(0);
     } 
@@ -175,6 +176,14 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (strcmp(v_commands.at(i).at(0),"exit") == 0)
             exit(0);
+        string cmd = v_commands.at(i).at(0);
+        if (!has_slash(cmd)) {
+            if (!find_path(cmd)) {
+                cerr << ERROR_NOT_FOUND << endl;
+                return 1;
+            }
+            v_commands.at(i).at(0) = &cmd[0];
+        }
         if (i != v_commands.size()-1) {
             if (-1 == pipe(rfds)) {
                 perror("Error with pipe");
@@ -297,14 +306,9 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
                 }
             }
             char **command_arr = &v_commands.at(i)[0];
-            if (has_slash(command_arr[0])) {
-                if (-1 == execv(command_arr[0], command_arr)) {
-                    perror("execv");
-                    exit(1);
-                }
-            }
-            else {
-                find_and_exec(command_arr);
+            if (-1 == execv(command_arr[0], command_arr)) {
+                perror("execv");
+                exit(1);
             }
         }
         else { //parent process
