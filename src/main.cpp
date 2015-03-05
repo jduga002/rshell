@@ -54,6 +54,17 @@ int change_dir(vector<char *> &command) {
     int ret;
     if (-1 == (ret = chdir(command.at(1))))
         perror("chdir");
+    else {
+        char wrk_dir[PATH_MAX+1];
+        if (NULL == getcwd(wrk_dir,PATH_MAX+1)) {
+            perror("getcwd");
+            exit(1);
+        }
+        if (-1 == setenv("PWD",wrk_dir,1)) {
+            perror("setenv");
+            exit(1);
+        }
+    }
     return ret;
 }
 
