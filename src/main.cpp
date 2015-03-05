@@ -22,6 +22,7 @@ const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not suppor
 const char ERROR_MULT_INPUT[] = "rshell: error on input redirection: please use only one of < or <<< per command";
 const char ERROR_MULT_OUTPUT[] = "rshell: error on output redirection: please use only one of > or >> per command";
 const char ERROR_NOT_FOUND[] = "execv: command not found";
+const char CD_ERR[] = "cd: usage: cd directory";
 
 const int P_READ = 0;
 const int P_WRITE = 1;
@@ -44,6 +45,29 @@ void getHost(char *hostName) {
         perror("gethostname() error");
     }
 }
+
+int change_dir(vector<char *> &command) {
+    if (command.size() == 2) { // no args passed to cd
+        cerr << CD_ERR << endl;
+        return 1;
+    }
+    int ret;
+    if (-1 == (ret = chdir(command.at(1))))
+        perror("chdir");
+    else {
+        char wrk_dir[PATH_MAX+1];
+        if (NULL == getcwd(wrk_dir,PATH_MAX+1)) {
+            perror("getcwd");
+            exit(1);
+        }
+        if (-1 == setenv("PWD",wrk_dir,1)) {
+            perror("setenv");
+            exit(1);
+        }
+    }
+    return ret;
+}
+
 
 bool find_path(string &command) {
     char *environ_path;
@@ -96,6 +120,8 @@ bool has_slash(const string &str) {
 int exec_command(vector<char *> &command) { 
     if (strcmp(command[0],"exit") == 0)
         exit(0);
+    else if (strcmp(command[0],"cd") == 0)
+        return change_dir(command);
 
     string cmd = command.at(0);
     if (!has_slash(cmd)) {
@@ -177,6 +203,10 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (strcmp(v_commands.at(i).at(0),"exit") == 0)
             exit(0);
+        else if (strcmp(v_commands.at(i).at(0),"cd") == 0) {
+            change_dir(v_commands.at(i));
+            continue;
+        }
         string cmd = v_commands.at(i).at(0);
         if (!has_slash(cmd)) {
             if (!find_path(cmd)) {
@@ -583,7 +613,12 @@ int main() {
     signal(SIGINT, handler);
 
     char line[MAX_LINE_LENGTH]; 
-    cerr << "$ ";
+    string curr_dir = getenv("PWD");
+    if (&curr_dir[0] == NULL) {
+        perror("error getting current working directory");
+        exit(1);
+    }
+    cout << curr_dir << " $ " << flush;
     cin.getline(line, MAX_LINE_LENGTH);
     line[MAX_LINE_LENGTH-1] = '\0';
     if (strlen(line) == MAX_LINE_LENGTH - 1) {
@@ -630,7 +665,12 @@ int main() {
             }
         }
 
-        cout << "$ " << flush;
+        curr_dir = getenv("PWD");
+        if (&curr_dir[0] == NULL) {
+            perror("error getting current working directory");
+            exit(1);
+        }
+        cout << curr_dir << " $ ";
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
