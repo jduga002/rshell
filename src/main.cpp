@@ -109,7 +109,6 @@ int exec_command(vector<char *> &command) {
     string cmd = command.at(0);
     if (!has_slash(cmd)) {
         if (!find_path(cmd)) {
-            cerr << ERROR_NOT_FOUND << endl;
             return 1;
         }
         command.at(0) = &cmd[0];
