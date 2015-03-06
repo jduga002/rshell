@@ -79,7 +79,15 @@ bool find_path(string &command) {
     char *path_cpy = &env_path_str[0];
     char * str_tok = strtok(path_cpy, ":");
     while (str_tok != NULL) {
-        DIR *p_dir;
+        struct stat buf;
+        string path= str_tok;
+        path += '/';
+        path += command;
+        if (0 == stat(path.c_str(), &buf)) {
+            command = path;
+            return true;
+        }
+/*        DIR *p_dir;
         if (NULL == (p_dir = opendir(str_tok))) {
             perror("opendir");
             exit(1);
@@ -104,9 +112,10 @@ bool find_path(string &command) {
         if (-1 == closedir(p_dir)) {
             perror("closedir");
             exit(1);
-        }
+        }*/
         str_tok = strtok(NULL, ":");
     }
+    perror(command.c_str());
     return false;
 }
 
