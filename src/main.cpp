@@ -87,32 +87,6 @@ bool find_path(string &command) {
             command = path;
             return true;
         }
-/*        DIR *p_dir;
-        if (NULL == (p_dir = opendir(str_tok))) {
-            perror("opendir");
-            exit(1);
-        }
-        struct dirent *p_dirent;
-        while (NULL != (p_dirent = readdir(p_dir))) {
-            if (strcmp(p_dirent->d_name, &command[0]) == 0) {
-                string path = str_tok;
-                path += "/"; path += command;
-                command = path;
-                if (-1 == closedir(p_dir)) {
-                    perror("closedir");
-                    exit(1);
-                }
-                return true;
-            }
-        }
-        if (errno == EBADF) {
-            perror("readdir");
-            exit(1);
-        }
-        if (-1 == closedir(p_dir)) {
-            perror("closedir");
-            exit(1);
-        }*/
         str_tok = strtok(NULL, ":");
     }
     perror(command.c_str());
@@ -679,7 +653,7 @@ int main() {
             perror("error getting current working directory");
             exit(1);
         }
-        cout << curr_dir << " $ ";
+        cout << curr_dir << " $ " << flush;
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
