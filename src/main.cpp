@@ -21,7 +21,6 @@ const char LENGTH_ERROR[] = "rshell: error on input: too many chars; exiting rsh
 const char CONN_IOPIP_ERROR[] = "rshell: error: rshell currently does not support the use of connectors and IO Redirection/Piping together";
 const char ERROR_MULT_INPUT[] = "rshell: error on input redirection: please use only one of < or <<< per command";
 const char ERROR_MULT_OUTPUT[] = "rshell: error on output redirection: please use only one of > or >> per command";
-const char ERROR_NOT_FOUND[] = "execv: command not found";
 const char CD_ERR[] = "cd: usage: cd directory";
 
 const int P_READ = 0;
@@ -185,14 +184,10 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
     for (unsigned i = 0; i < v_commands.size(); i++) {
         if (strcmp(v_commands.at(i).at(0),"exit") == 0)
             exit(0);
-        else if (strcmp(v_commands.at(i).at(0),"cd") == 0) {
-            change_dir(v_commands.at(i));
-            continue;
-        }
+
         string cmd = v_commands.at(i).at(0);
-        if (!has_slash(cmd)) {
+        if (strcmp(v_commands.at(i).at(0),"cd") != 0 && !has_slash(cmd)) {
             if (!find_path(cmd)) {
-                cerr << ERROR_NOT_FOUND << endl;
                 return 1;
             }
             v_commands.at(i).at(0) = &cmd[0];
@@ -318,6 +313,11 @@ int exec_commands_iopip(vector<vector<char *> > &v_commands) {
                     perror("close");
                     exit(1);
                 }
+            }
+            
+            if (strcmp(v_commands.at(i).at(0),"cd") == 0) {
+                int ret = change_dir(v_commands.at(i));
+                exit(ret);
             }
             char **command_arr = &v_commands.at(i)[0];
             if (-1 == execv(command_arr[0], command_arr)) {
@@ -652,7 +652,7 @@ int main() {
             perror("error getting current working directory");
             exit(1);
         }
-        cout << curr_dir << " $ " << flush;
+        cout << curr_dir << " $ ";
         cin.getline(line, MAX_LINE_LENGTH);
 
         line[MAX_LINE_LENGTH-1] = '\0';
